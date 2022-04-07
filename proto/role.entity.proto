@@ -1,0 +1,57 @@
+syntax = "proto3";
+package proto;
+option go_package = "../pb;pb";
+
+message RoleListReq {
+  // @gotags: form:"name"
+  string Name = 1;
+  // @gotags: form:"page_size"
+  int64  PageSize = 2 ;
+  // @gotags: form:"page"
+  int64  Page = 3;
+  // @gotags: form:"domain_id" binding:"required"
+  int64 DomainID=4;
+}
+message RoleCreateReq{
+  // @gotags: json:"name" binding:"required"
+  string Name = 1 ;
+  // @gotags: json:"desc" binding:"required"
+  string  Desc = 2;
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID=3;
+}
+
+message RoleUpdateReq{
+  // @gotags: json:"id" binding:"required"
+  int64 ID = 1;
+  // @gotags: json:"name" binding:"required"
+  string Name = 2 ;
+  // @gotags: json:"desc" binding:"required"
+  string  Desc = 3;
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID=4;
+}
+
+message RoleDelReq{
+  // @gotags: json:"id" binding:"required"
+  int64 ID = 1;
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID=2;
+}
+
+
+message RolePermissionListReq {
+  // @gotags: form:"role_id" binding:"required"
+  int64 RoleID = 1;
+  // @gotags: form:"domain_id" binding:"required"
+  int64 DomainID=2;
+}
+
+message RolePermissionSetReq{
+  // @gotags: json:"role_id" binding:"required"
+  int64 RoleID = 1;
+  // @gotags: json:"permission_ids" binding:"required"
+  repeated int64 PermissionIDS = 2;
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID=3;
+}

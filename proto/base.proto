@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "../pb;pb";
+//import "google/protobuf/any.proto";
+message DefaultRes {
+  // @inject_tag: json:"code"
+  int32  code = 1;
+  // @inject_tag: json:"msg"
+  string msg = 2;
+  // @inject_tag: json:"data"
+  string Data = 3;
+}
+
+message EmptyReq{}
+
+// 主键请求
+message DefaultPkReq{
+  oneof pk{
+    // @gotags: json:"id"
+    int64 ID = 1;
+    // @gotags: json:"code"
+    string Code = 2;
+  }
+
+}
+

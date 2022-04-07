@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "../pb;pb";
+message DomainCreateReq {
+  // @gotags: json:"name" binding:"required"
+  string Name = 1;
+  // @gotags: json:"domain" binding:"required"
+  string Domain = 2;
+  // @gotags: json:"status" binding:"required"
+  int32 Status = 3;
+}
+
+message DomainListReq {
+  // @gotags: form:"name"
+  string Name = 1;
+  // @gotags: form:"domain"
+  string Domain = 2;
+  // @gotags: form:"page_size"
+  int64  PageSize = 3 ;
+  // @gotags: form:"page"
+  int64  Page = 4;
+}
+
+message DomainDelReq {
+  // @gotags: form:"name" json:"name" binding:"required"
+  string id = 1;
+}
+
+message DomainUpdateReq {
+  // @gotags: json:"id"  binding:"required"
+  string id = 1;
+  // @gotags: json:"name" binding:"required"
+  string Name = 2;
+  // @gotags: json:"domain" binding:"required"
+  string Domain = 3;
+  // @gotags: json:"status" binding:"required"
+  int32 Status = 4;
+}

@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "../pb;pb";
+import "base.proto";
+import "admin.entity.proto";
+import "role.entity.proto";
+import "path.entity.proto";
+import "permission.entity.proto";
+import "domain.entity.proto";
+service Rbac {
+  rpc DomainList(DomainListReq)returns(DefaultRes);
+  rpc DomainCreate(DomainCreateReq)returns(DefaultRes);
+  rpc DomainUpdate(DomainUpdateReq)returns(DefaultRes);
+  rpc DomainDel(DefaultPkReq)returns(DefaultRes);
+  rpc DomainInfo(DefaultPkReq)returns(DefaultRes);
+
+
+  rpc AdminList(AdminListReq)returns(DefaultRes);
+  rpc AdminInfo(DefaultPkReq)returns(DefaultRes);
+  rpc AdminCreate(AdminCreateReq)returns(DefaultRes);
+  rpc AdminUpdate(AdminUpdateReq)returns(DefaultRes);
+  rpc AdminDel(DefaultPkReq)returns(DefaultRes);
+  rpc CheckPwd(CheckPwdReq)returns(DefaultRes);
+
+  rpc RoleList(RoleListReq)returns(DefaultRes);
+  rpc RoleInfo(DefaultPkReq)returns(DefaultRes);
+  rpc RoleCreate(RoleCreateReq)returns(DefaultRes);
+  rpc RoleUpdate(RoleUpdateReq)returns(DefaultRes);
+  rpc RoleDel(DefaultPkReq)returns(DefaultRes);
+  rpc RolePermissionList(RolePermissionListReq)returns(DefaultRes);
+  rpc RolePermissionSet(RolePermissionSetReq)returns(DefaultRes);
+
+
+  rpc PermissionList(PermissionListReq)returns(DefaultRes);
+  rpc PermissionInfo(DefaultPkReq)returns(DefaultRes);
+  rpc PermissionCreate(PermissionCreateReq)returns(DefaultRes);
+  rpc PermissionUpdate(PermissionUpdateReq)returns(DefaultRes);
+  rpc PermissionDel(DefaultPkReq)returns(DefaultRes);
+
+  rpc PermissionPathList(PermissionPathListReq)returns(DefaultRes);
+  rpc PermissionPathSet(PermissionPathSetReq)returns(DefaultRes);
+
+  rpc PathList(PathListReq)returns(DefaultRes);
+  rpc PathInfo(DefaultPkReq)returns(DefaultRes);
+  rpc PathCreate(PathCreateReq)returns(DefaultRes);
+  rpc PathUpdate(PathUpdateReq)returns(DefaultRes);
+  rpc PathDel(DefaultPkReq)returns(DefaultRes);
+
+  rpc AdminMenuTree(AdminMenuTreeReq)returns(DefaultRes);
+}
+
+
+

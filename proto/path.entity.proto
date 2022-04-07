@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "../pb;pb";
+
+
+
+message PathCreateReq {
+  // @gotags: json:"title" binding:"required"
+  string Title = 1;
+  // @gotags: json:"component" binding:"required"
+  string Component = 2;
+  // @gotags: json:"redirect" binding:"required"
+  string Redirect = 3;
+  // @gotags: json:"parent_id" binding:"required"
+  int64 ParentID = 4;
+  // @gotags: json:"path" binding:"required"
+  string Path = 5;
+  // @gotags: json:"name" binding:"required"
+  string Name = 6;
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID = 7;
+  // @gotags: json:"path_type" binding:"required"
+  int64  PathType = 8;
+  // @gotags: json:"mate"
+  map<string, string> Meta = 9;
+}
+
+message PathUpdateReq {
+  // @gotags: json:"title" binding:"required"
+  string Title = 1;
+  // @gotags: json:"component" binding:"required"
+  string Component = 2;
+  // @gotags: json:"redirect" binding:"required"
+  string Redirect = 3;
+  // @gotags: json:"parent_id" binding:"required"
+  int64 ParentID = 4;
+  // @gotags: json:"path" binding:"required"
+  string Path = 5;
+  // @gotags: json:"id" binding:"required"
+  int64 ID = 6;
+  // @gotags: json:"name" binding:"required"
+  string Name = 7;
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID = 8;
+  // @gotags: json:"path_type" binding:"required"
+  int64  PathType = 9;
+  // @gotags: json:"mate"
+  map<string, string> Meta = 10;
+
+}
+
+
+message PathListReq {
+  // @gotags: form:"page_size"
+  int64  PageSize = 1 ;
+  // @gotags: form:"page"
+  int64  Page = 2;
+  // @gotags: form:"title"
+  string Title = 3;
+  // @gotags: form:"domain_id" binding:"required"
+  int64 DomainID = 4;
+}
+
+message PathDelReq {
+  // @gotags: json:"id"
+  int64 ID = 1;
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID = 2;
+}
+
+
+

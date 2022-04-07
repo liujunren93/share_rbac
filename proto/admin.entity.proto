@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "../pb;pb";
+
+
+message AdminCreateReq {
+  // @gotags: json:"account" binding:"required"
+  string Account = 1;
+  // @gotags: json:"name" binding:"required"
+  string Name = 2;
+  // @gotags: json:"password" binding:"required"
+  string Password = 3;
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID=4;
+}
+
+message AdminUpdateReq {
+  // @gotags: json:"id" binding:"required"
+  int64 ID = 1;
+  // @gotags: json:"name"
+  string Name = 2;
+  // @gotags: json:"password"
+  string Password = 3;
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID=4;
+}
+
+
+message AdminListReq {
+  // @gotags: form:"page_size"
+  int64  PageSize = 1 ;
+  // @gotags: form:"page"
+  int64  Page = 2;
+  // @gotags: form:"name"
+  string Name = 3;
+  // @gotags: form:"domain_id" binding:"required"
+  int64 DomainID=4;
+}
+
+message AdminDelReq {
+  // @gotags: json:"id" binding:"required"
+  int64 ID = 1;
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID=2;
+}
+
+
+message CheckPwdReq{
+  // @gotags: json:"account" binding:"required"
+  string Account = 1;
+  // @gotags: json:"password" binding:"required"
+  string Password = 2;
+}
+
+
+message AdminMenuTreeReq {
+  // @gotags: form:"account" binding:"required"
+  int64 UID = 1;
+  // @gotags: form:"domain_id" binding:"required"
+  int64 DomainID=2;
+}

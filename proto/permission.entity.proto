@@ -1,0 +1,58 @@
+syntax = "proto3";
+package proto;
+option go_package = "../pb;pb";
+
+message PermissionListReq {
+  // @gotags: json:"name"
+  string Name = 1;
+  // @gotags: json:"page_size"
+  int64  PageSize = 2 ;
+  // @gotags: json:"page"
+  int64  Page = 3;
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID=4;
+}
+
+message PermissionCreateReq{
+  // @gotags: json:"name" binding:"required"
+  string Name = 1 ;
+  // @gotags: json:"desc" binding:"required"
+  string  Desc = 2;
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID=3;
+}
+
+message PermissionUpdateReq{
+  // @gotags: json:"id" binding:"required"
+  int64 ID = 1;
+  // @gotags: json:"name" binding:"required"
+  string Name = 2 ;
+  // @gotags: json:"desc" binding:"required"
+  string  Desc = 3;
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID=4;
+}
+
+message PermissionDelReq{
+  // @gotags: json:"id" binding:"required"
+  int64 ID = 1;
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID=2;
+}
+
+
+message PermissionPathListReq {
+  // @gotags: form:"permission_id" binding:"required"
+  int64 PermissionID = 1;
+  // @gotags: form:"domain_id" binding:"required"
+   int64 DomainID=4;
+}
+
+message PermissionPathSetReq {
+  // @gotags: json:"permission_id" binding:"required"
+  int64 PermissionID = 1;
+  // @gotags: json:"path_ids" binding:"required"
+  repeated int64 PathIDs = 2;
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID=3;
+}
