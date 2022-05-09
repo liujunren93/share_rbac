@@ -12,6 +12,10 @@ import (
 
 var DB *gorm.DB
 
+func DomianDB(domain int64) *gorm.DB {
+	return DB.Where("domain_id=?", domain)
+}
+
 func pageSize(size int64) int {
 	if size == 0 {
 		return 25
@@ -34,6 +38,7 @@ func InitDB(db *gorm.DB) error {
 		&model2.RbacPath{},
 		&model2.RbacPermissionPath{},
 		&model2.RbacDomain{},
+		&model2.RbacRoleUser{},
 	}
 	return db.AutoMigrate(list...)
 }

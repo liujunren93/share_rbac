@@ -24,12 +24,12 @@ message DomainListReq {
 
 message DomainDelReq {
   // @gotags: form:"name" json:"name" binding:"required"
-  string id = 1;
+  int64 ID = 1;
 }
 
 message DomainUpdateReq {
   // @gotags: json:"id"  binding:"required"
-  string id = 1;
+  int64 ID = 1;
   // @gotags: json:"name" binding:"required"
   string Name = 2;
   // @gotags: json:"domain" binding:"required"

@@ -6,34 +6,34 @@ option go_package = "../pb;pb";
 
 
 message PathCreateReq {
-  // @gotags: json:"title" binding:"required"
-  string Title = 1;
+   // @gotags: json:"domain_id" binding:"required"
+   int64 DomainID = 1;
   // @gotags: json:"component" binding:"required"
   string Component = 2;
-  // @gotags: json:"redirect" binding:"required"
+  // @gotags: json:"redirect" 
   string Redirect = 3;
-  // @gotags: json:"parent_id" binding:"required"
+  // @gotags: json:"parent_id" 
   int64 ParentID = 4;
   // @gotags: json:"path" binding:"required"
   string Path = 5;
   // @gotags: json:"name" binding:"required"
   string Name = 6;
-  // @gotags: json:"domain_id" binding:"required"
-  int64 DomainID = 7;
   // @gotags: json:"path_type" binding:"required"
   int64  PathType = 8;
-  // @gotags: json:"mate"
+  // @gotags: json:"meta"
   map<string, string> Meta = 9;
+  // @gotags: json:"api_path" binding:"required"
+  string ApiPath=10;
 }
 
 message PathUpdateReq {
-  // @gotags: json:"title" binding:"required"
-  string Title = 1;
-  // @gotags: json:"component" binding:"required"
+  // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID = 1;
+  // @gotags: json:"component" binding:"required_if=PathType 1"
   string Component = 2;
-  // @gotags: json:"redirect" binding:"required"
+  // @gotags: json:"redirect"  
   string Redirect = 3;
-  // @gotags: json:"parent_id" binding:"required"
+  // @gotags: json:"parent_id" 
   int64 ParentID = 4;
   // @gotags: json:"path" binding:"required"
   string Path = 5;
@@ -41,12 +41,12 @@ message PathUpdateReq {
   int64 ID = 6;
   // @gotags: json:"name" binding:"required"
   string Name = 7;
-  // @gotags: json:"domain_id" binding:"required"
-  int64 DomainID = 8;
   // @gotags: json:"path_type" binding:"required"
-  int64  PathType = 9;
-  // @gotags: json:"mate"
-  map<string, string> Meta = 10;
+  int64  PathType = 8;
+  // @gotags: json:"meta"
+  map<string, string> Meta = 9;
+    // @gotags: json:"api_path" binding:"required"
+  string ApiPath=10;
 
 }
 
@@ -56,18 +56,16 @@ message PathListReq {
   int64  PageSize = 1 ;
   // @gotags: form:"page"
   int64  Page = 2;
-  // @gotags: form:"title"
-  string Title = 3;
-  // @gotags: form:"domain_id" binding:"required"
-  int64 DomainID = 4;
+  // @gotags: form:"name"
+  string Name = 3;
+   // @gotags: form:"path"
+  string Path = 4;
+  // @gotags: form:"path_type"
+  int64 PathType = 5;
+ // @gotags: form:"-"
+  int64 DomainID=6;
 }
 
-message PathDelReq {
-  // @gotags: json:"id"
-  int64 ID = 1;
-  // @gotags: json:"domain_id" binding:"required"
-  int64 DomainID = 2;
-}
 
 
 

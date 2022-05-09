@@ -21,7 +21,9 @@ message DefaultPkReq{
     int64 ID = 1;
     // @gotags: json:"code"
     string Code = 2;
-  }
+  } 
+    // @gotags: json:"domain_id" binding:"required"
+   int64 DomainID=3;
 
 }
 

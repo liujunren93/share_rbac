@@ -9,46 +9,57 @@ import "path.entity.proto";
 import "permission.entity.proto";
 import "domain.entity.proto";
 service Rbac {
-  rpc DomainList(DomainListReq)returns(DefaultRes);
-  rpc DomainCreate(DomainCreateReq)returns(DefaultRes);
-  rpc DomainUpdate(DomainUpdateReq)returns(DefaultRes);
-  rpc DomainDel(DefaultPkReq)returns(DefaultRes);
-  rpc DomainInfo(DefaultPkReq)returns(DefaultRes);
+  rpc MDomainList(DomainListReq)returns(DefaultRes);
+  rpc MDomainCreate(DomainCreateReq)returns(DefaultRes);
+  rpc MDomainUpdate(DomainUpdateReq)returns(DefaultRes);
+  rpc MDomainDel(DefaultPkReq)returns(DefaultRes);
+  rpc MDomainInfo(DefaultPkReq)returns(DefaultRes);
 
 
-  rpc AdminList(AdminListReq)returns(DefaultRes);
-  rpc AdminInfo(DefaultPkReq)returns(DefaultRes);
-  rpc AdminCreate(AdminCreateReq)returns(DefaultRes);
-  rpc AdminUpdate(AdminUpdateReq)returns(DefaultRes);
-  rpc AdminDel(DefaultPkReq)returns(DefaultRes);
-  rpc CheckPwd(CheckPwdReq)returns(DefaultRes);
+  rpc MAdminList(AdminListReq)returns(DefaultRes);
+  rpc MAdminInfo(DefaultPkReq)returns(DefaultRes);
+  rpc MAdminCreate(AdminCreateReq)returns(DefaultRes);
+  rpc MAdminUpdate(AdminUpdateReq)returns(DefaultRes);
+  rpc MAdminDel(DefaultPkReq)returns(DefaultRes);
 
-  rpc RoleList(RoleListReq)returns(DefaultRes);
-  rpc RoleInfo(DefaultPkReq)returns(DefaultRes);
-  rpc RoleCreate(RoleCreateReq)returns(DefaultRes);
-  rpc RoleUpdate(RoleUpdateReq)returns(DefaultRes);
-  rpc RoleDel(DefaultPkReq)returns(DefaultRes);
-  rpc RolePermissionList(RolePermissionListReq)returns(DefaultRes);
-  rpc RolePermissionSet(RolePermissionSetReq)returns(DefaultRes);
+  rpc MAdminRoleList(AdminRoleListReq)returns(DefaultRes);
+  rpc MAdminRoleSet(AdminRoleSetReq)returns(DefaultRes);
+  rpc MAdminPermission(DefaultPkReq)returns(DefaultRes);
 
 
-  rpc PermissionList(PermissionListReq)returns(DefaultRes);
-  rpc PermissionInfo(DefaultPkReq)returns(DefaultRes);
-  rpc PermissionCreate(PermissionCreateReq)returns(DefaultRes);
-  rpc PermissionUpdate(PermissionUpdateReq)returns(DefaultRes);
-  rpc PermissionDel(DefaultPkReq)returns(DefaultRes);
+  rpc MRoleList(RoleListReq)returns(DefaultRes);
+  rpc MRoleInfo(DefaultPkReq)returns(DefaultRes);
+  rpc MRoleCreate(RoleCreateReq)returns(DefaultRes);
+  rpc MRoleUpdate(RoleUpdateReq)returns(DefaultRes);
+  rpc MRoleDel(DefaultPkReq)returns(DefaultRes);
+  rpc MRolePermissionList(RolePermissionListReq)returns(DefaultRes);
+  rpc MRolePermissionSet(RolePermissionSetReq)returns(DefaultRes);
+  //return []
 
-  rpc PermissionPathList(PermissionPathListReq)returns(DefaultRes);
-  rpc PermissionPathSet(PermissionPathSetReq)returns(DefaultRes);
 
-  rpc PathList(PathListReq)returns(DefaultRes);
-  rpc PathInfo(DefaultPkReq)returns(DefaultRes);
-  rpc PathCreate(PathCreateReq)returns(DefaultRes);
-  rpc PathUpdate(PathUpdateReq)returns(DefaultRes);
-  rpc PathDel(DefaultPkReq)returns(DefaultRes);
+  rpc MPermissionList(PermissionListReq)returns(DefaultRes);
+  rpc MPermissionInfo(DefaultPkReq)returns(DefaultRes);
+  rpc MPermissionCreate(PermissionCreateReq)returns(DefaultRes);
+  rpc MPermissionUpdate(PermissionUpdateReq)returns(DefaultRes);
+  rpc MPermissionDel(DefaultPkReq)returns(DefaultRes);
+
+  rpc MPermissionPathList(PermissionPathListReq)returns(DefaultRes);
+  rpc MPermissionPathSet(PermissionPathSetReq)returns(DefaultRes);
+
+  rpc MPathList(PathListReq)returns(DefaultRes);
+  rpc MPathInfo(DefaultPkReq)returns(DefaultRes);
+  rpc MPathCreate(PathCreateReq)returns(DefaultRes);
+  rpc MPathUpdate(PathUpdateReq)returns(DefaultRes);
+  rpc MPathDel(DefaultPkReq)returns(DefaultRes);
+
 
   rpc AdminMenuTree(AdminMenuTreeReq)returns(DefaultRes);
+  rpc AdminInfo(DefaultPkReq)returns(LoginRes);
+  rpc Login(LoginReq)returns(LoginRes);
+  rpc RolePermission(RolePermissionReq)returns(DefaultRes);
+
 }
+
 
 
 

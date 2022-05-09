@@ -15,8 +15,8 @@ type RbacRole struct {
 
 type RbacRoleUser struct {
 	Model
-	DomainID uint `gorm:"domain_id;type:int;not null;default:'';comment:'domain_id'"`
-	RoleID   uint `gorm:"role_id;type:int;not null;default:0;comment:'role_id'"`
+	DomainID uint `gorm:"domain_id;type:int;not null;default:0;comment:'domain_id'" json:"domain_id"`
+	RoleID   uint `gorm:"role_id;type:int;not null;default:0;comment:'role_id'" json:"role_id"`
 	UID      uint `gorm:"uid;type:int;not null;default:0;comment:'uid'" `
 }
 

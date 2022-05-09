@@ -2,7 +2,7 @@ package entity
 
 import (
 	"github.com/liujunren93/share_rbac/intenal/model"
-	"github.com/liujunren93/share_utils/commond/list"
+	"github.com/liujunren93/share_utils/common/list"
 )
 
 /**
@@ -22,7 +22,7 @@ type PathListRes struct {
 }
 
 type MenuTree struct {
-	model.RbacPath
+	Menu
 	Childrens []list.TreeNoder `json:"childrens"`
 }
 
@@ -40,4 +40,16 @@ func (m *MenuTree) GetChilds() interface{} {
 
 func (m *MenuTree) AddChild(i interface{}) {
 	m.Childrens = append(m.Childrens, i.(*MenuTree))
+}
+
+type Menu struct {
+	ID        uint   `json:"id"`
+	ParentID  uint   `json:"parent_id"`
+	Path      string `json:"path"`
+	Name      string `json:"name"`
+	Title     string `json:"title"`
+	Redirect  string `json:"redirect"`
+	Component string `json:"component"`
+	Meta      string `json:"meta"`
+	Target    string `json:"target"`
 }

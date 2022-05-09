@@ -45,27 +45,27 @@ func (Domain) Create(req *pb.DomainCreateReq) errors.Error {
 	}).Error
 	if err != nil {
 		log.Logger.Error(err)
-		return errors.NewDBInternalErr(err)
+		return errors.NewDBInternal(err)
 	}
 	return nil
 }
 func (Domain) Update(req *pb.DomainUpdateReq) errors.Error {
 	zero := helper.Struct2MapSnakeNoZero(req)
 	delete(zero, "id")
-	err := DB.Where("id=?", req.Id).Model(&model.RbacDomain{}).Updates(zero).Error
+	err := DB.Where("id=?", req.ID).Model(&model.RbacDomain{}).Updates(zero).Error
 	if err != nil {
 		log.Logger.Error(err)
-		return errors.NewDBInternalErr(err)
+		return errors.NewDBInternal(err)
 	}
 	return nil
 }
 
 func (Domain) Del(req *pb.DefaultPkReq) errors.Error {
 
-	err := DB.Where("id=?", req.Pk).Delete(&model.RbacDomain{}).Error
+	err := DB.Where("id=?", req.Pk.(*pb.DefaultPkReq_ID).ID).Delete(&model.RbacDomain{}).Error
 	if err != nil {
 		log.Logger.Error(err)
-		return errors.NewDBInternalErr(err)
+		return errors.NewDBInternal(err)
 	}
 	return nil
 }

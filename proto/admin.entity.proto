@@ -46,17 +46,56 @@ message AdminDelReq {
 }
 
 
-message CheckPwdReq{
+message LoginReq{
   // @gotags: json:"account" binding:"required"
   string Account = 1;
   // @gotags: json:"password" binding:"required"
   string Password = 2;
+    // @gotags: json:"domain_id" binding:"required"
+  int64 DomainID=4;
+}
+
+message LoginRes{
+  // @inject_tag: json:"code"
+  int32  code = 1;
+  // @inject_tag: json:"msg"
+  string msg = 2;
+  // @inject_tag: json:"data"
+  LoginResData Data = 3;
+}
+
+message LoginResData{
+    // @gotags: json:"uid"
+  int64 UID=1;
+  // @gotags: json:"name"
+  string Name=2;
+   // @gotags: json:"role_ids"
+ repeated int64  RoleIDs=3;
+}
+
+message AdminMenuTreeReq {
+  // @gotags: form:"-" 
+ repeated int64 RoleIDs = 1;
+  // @gotags: form:"-" 
+  int64 DomainID=2;
 }
 
 
-message AdminMenuTreeReq {
-  // @gotags: form:"account" binding:"required"
-  int64 UID = 1;
-  // @gotags: form:"domain_id" binding:"required"
-  int64 DomainID=2;
+
+message AdminRoleListReq {
+  // @gotags: from:"domain_id" 
+  int64 DomainID=1;
+  // @gotags: from:"role_id" 
+  int64 RoleID = 2;
+}
+
+
+message AdminRoleSetReq {
+  // @gotags: json:"domain_id" 
+  int64 DomainID=1;
+  // @gotags: json:"role_ids" 
+  repeated int64 RoleIDs = 2;
+  // @gotags: json:"admin_id" 
+  int64 AdminID =3;
+
 }

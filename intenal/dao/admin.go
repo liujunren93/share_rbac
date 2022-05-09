@@ -5,7 +5,8 @@ import (
 	"github.com/liujunren93/share_rbac/intenal/model"
 	"github.com/liujunren93/share_rbac/log"
 	"github.com/liujunren93/share_rbac/pb"
-	"github.com/liujunren93/share_utils/commond/list"
+	"github.com/liujunren93/share_utils/common/list"
+	"github.com/liujunren93/share_utils/common/set"
 	"github.com/liujunren93/share_utils/errors"
 	"github.com/liujunren93/share_utils/helper"
 )
@@ -24,12 +25,12 @@ func (Admin) List(req *pb.AdminListReq) (res entity.AdminListRes) {
 		db = db.Where("name like ?", "%"+req.Name+"%")
 	}
 	db.Model(&model.RbacAdmin{}).Count(&res.Total)
-	DB.Limit(pageSize(req.PageSize)).Offset(offset(req.PageSize, req.Page)).Find(&res.List)
+	db.Limit(pageSize(req.PageSize)).Offset(offset(req.PageSize, req.Page)).Find(&res.List)
 	return
 }
 
 func (Admin) Create(req *pb.AdminCreateReq) errors.Error {
-	first := DB.Where("account=?", req.Account).First(&model.RbacAdmin{})
+	first := DB.Where("domain_id=? and account=?", req.DomainID, req.Account).First(&model.RbacAdmin{})
 	if first.RowsAffected > 0 {
 		return errors.NewDBDuplication("account")
 	}
@@ -45,7 +46,7 @@ func (Admin) Create(req *pb.AdminCreateReq) errors.Error {
 		Password: password,
 	}).Error
 	if err != nil {
-		return errors.NewDBInternalErr(err)
+		return errors.NewDBInternal(err)
 	}
 	return nil
 
@@ -53,13 +54,13 @@ func (Admin) Create(req *pb.AdminCreateReq) errors.Error {
 
 func (Admin) Info(req *pb.DefaultPkReq) model.RbacAdmin {
 	var info model.RbacAdmin
-	DB.Where("id=?", req.Pk).First(&info)
+	DB.Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).First(&info)
 	return info
 }
 
 func (Admin) Update(req *pb.AdminUpdateReq) errors.Error {
 	var info model.RbacAdmin
-	first := DB.Where("id=? ", req.ID).First(&info)
+	first := DB.Where("id=? and domain_id=? ", req.ID, req.DomainID).First(&info)
 	if first.RowsAffected == 0 {
 		return errors.NewDBNoData("")
 	}
@@ -73,44 +74,123 @@ func (Admin) Update(req *pb.AdminUpdateReq) errors.Error {
 	}
 	snake := helper.Struct2MapSnakeNoZero(req)
 	delete(snake, "id")
+	delete(snake, "domain_id")
 	err := DB.Where("id=?", req.ID).Model(model.RbacAdmin{}).Updates(snake).Error
 	if err != nil {
 		log.Logger.Error(err)
-		return errors.NewDBInternalErr(err)
+		return errors.NewDBInternal(err)
 	}
 	return nil
 }
-func (Admin) CheckPwd(req *pb.CheckPwdReq) errors.Error {
+func (Admin) Login(req *pb.LoginReq) (*pb.LoginResData, errors.Error) {
 	var info model.RbacAdmin
-	first := DB.Where("account=? ", req.Account).First(&info)
-	if first.RowsAffected > 0 {
-		return errors.NewUnauthorized("")
+	var res pb.LoginResData
+	first := DB.Where(" domain_id=? and account=? ", req.DomainID, req.Account).First(&info)
+	if first.RowsAffected == 0 {
+		return &res, errors.NewUnauthorized("")
 	}
 	err := helper.CheckPassword(info.Account, info.Password, req.Password)
 	if err != nil {
-		return errors.NewUnauthorized("")
+		return &res, errors.NewUnauthorized("")
 	}
-	return nil
+	res.UID = int64(info.ID)
+	res.Name = info.Name
+	u := Role{}.getRoleIdsByUID(info.ID)
+	res.RoleIDs = helper.TransSliceType[uint, int64](u)
+	return &res, nil
 }
-func (Admin) Del(Id int64) errors.Error {
-	err := DB.Where("id=?", Id).Delete(&model.RbacAdmin{}).Error
+func (Admin) Del(req *pb.DefaultPkReq) errors.Error {
+	err := DB.Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).Delete(&model.RbacAdmin{}).Error
 	if err != nil {
 		log.Logger.Error(err)
-		return errors.NewDBInternalErr(err)
+		return errors.NewDBInternal(err)
 	}
 	return nil
 
 }
 
-func (Admin) MenuTree(uid uint) interface{} {
-	pathList := Path{}.GetPathByUid(1, uid)
+func (dao Admin) AdminInfo(req *pb.DefaultPkReq) *pb.LoginResData {
+	var res pb.LoginResData
+	ra := dao.Info(req)
+	u := Role{}.getRoleIdsByUID(ra.ID)
+	res.Name = ra.Name
+	res.UID = int64(ra.ID)
+	res.RoleIDs = helper.TransSliceType[uint, int64](u)
+	return &res
+}
+
+func (Admin) MenuTree(roleIDs []int64) interface{} {
+	pathList := Path{}.GetRolePath(1, roleIDs)
 	var li = make([]list.TreeNoder, 0, len(pathList))
 	for _, p := range pathList {
 		li = append(li, &entity.MenuTree{
-			RbacPath:  p,
-			Childrens: nil,
+			Menu: entity.Menu{
+				ID:        p.ID,
+				ParentID:  p.ParentID,
+				Path:      p.Path,
+				Name:      p.Name,
+				Redirect:  p.Redirect,
+				Component: p.Component,
+				Meta:      p.Meta,
+			},
 		})
 	}
-	tree := list.List2Tree(li, &entity.MenuTree{})
-	return tree
+
+	// tree := list.List2Tree(li, &entity.MenuTree{})
+	return li
+}
+
+func (Admin) RoleList(req *pb.AdminRoleListReq) []model.RbacRole {
+	var arList []model.RbacRoleUser
+	d := DB.Where("role_id=? and domain_id=?", req.RoleID, req.DomainID).Find(&arList)
+	if d.RowsAffected == 0 {
+		return nil
+	}
+	us := set.NewSet[uint]()
+	for _, v := range arList {
+		us.Add(v.RoleID)
+	}
+	return Role{}.list(DB, req.DomainID, "", us.List()...)
+}
+
+func (Admin) SetRole(req *pb.AdminRoleSetReq) errors.Error {
+	var err error
+	if len(req.RoleIDs) == 0 {
+		err := DB.Where("domain_id=? and uid=? ", req.DomainID, req.AdminID).Delete(&model.RbacRoleUser{}).Error
+		if err != nil {
+			log.Logger.Error(err)
+			return errors.NewDBInternal(err)
+		}
+	} else {
+		err := DB.Where("domain_id=? and uid=? and role_id not in ?", req.DomainID, req.AdminID, req.RoleIDs).Delete(&model.RbacRoleUser{}).Error
+		if err != nil {
+			log.Logger.Error(err)
+			return errors.NewDBInternal(err)
+		}
+	}
+
+	var list []model.RbacRoleUser
+	DB.Where("domain_id=? and uid=? ", req.DomainID, req.AdminID).Find(&list)
+	us := set.NewSet[uint]()
+	for _, v := range list {
+		us.Add(v.RoleID)
+	}
+	newItems := us.GetNewitems(helper.TransSliceType[int64, uint](req.RoleIDs))
+	if len(newItems) == 0 {
+		return nil
+	}
+	var newData []model.RbacRoleUser
+	for _, v := range newItems {
+		newData = append(newData, model.RbacRoleUser{
+			DomainID: uint(req.DomainID),
+			RoleID:   v,
+			UID:      uint(req.AdminID),
+		})
+	}
+
+	err = DB.Create(&newData).Error
+	if err != nil {
+		return errors.NewDBInternal(err)
+	}
+	return nil
 }
