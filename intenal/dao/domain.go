@@ -23,7 +23,10 @@ func (Domain) List(req *pb.DomainListReq) entity.DomainListRes {
 		db = db.Where("name like ?", "%"+req.Name+"%")
 	}
 	if req.Domain != "" {
-		db = db.Where("name like ?", "%"+req.Domain+"%")
+		db = db.Where("domain like ?", "%"+req.Domain+"%")
+	}
+	if req.Status != 0 {
+		db = db.Where("status = ?", req.Domain)
 	}
 	db.Model(&model.RbacDomain{}).Count(&res.Total)
 

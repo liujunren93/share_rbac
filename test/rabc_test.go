@@ -3,15 +3,21 @@ package test
 import (
 	"testing"
 
+	re "github.com/go-redis/redis/v8"
 	"github.com/liujunren93/share_rbac/log"
+	"github.com/liujunren93/share_utils/client/grpc"
 	"github.com/liujunren93/share_utils/middleware"
+	"github.com/liujunren93/share_utils/server"
+	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 	"github.com/liujunren93/share_rbac"
-	"github.com/liujunren93/share_rbac/service"
-	"github.com/liujunren93/share_utils/auth"
-	"github.com/liujunren93/share_utils/auth/jwt"
-	"github.com/liujunren93/share_utils/databases/gorm"
+
+	"github.com/liujunren93/share_utils/common/auth"
+	"github.com/liujunren93/share_utils/common/auth/jwt"
+	"github.com/liujunren93/share_utils/common/mq/redis"
+	g "github.com/liujunren93/share_utils/databases/gorm"
+	dbredis "github.com/liujunren93/share_utils/databases/redis"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,14 +25,20 @@ import (
 * @Author: liujunren
 * @Date: 2022/2/28 16:19
  */
+var app *share_rbac.Rbac
 
 func init() {
+
+	app = share_rbac.NewRbac(redis.NewMq(dbredis.NewRedis(&re.Options{
+		Network: "tcp",
+		Addr:    "node1:6379",
+	})))
 	log.Logger = logrus.New()
 }
-func InitRbacDB() {
-	mysql, err := gorm.NewMysql(&gorm.Mysql{
+func InitRbacDB() *gorm.DB {
+	mysql, err := g.NewMysql(&g.Mysql{
 		LogMode:  true,
-		Host:     "192.168.0.103",
+		Host:     "node1",
 		User:     "root",
 		Password: "root",
 		Port:     3306,
@@ -35,23 +47,29 @@ func InitRbacDB() {
 	if err != nil {
 		panic(err)
 	}
-	share_rbac.NewRbacService(mysql)
+	return mysql
 }
 func initServer() {
 	engine := gin.Default()
 	engine.Use(middleware.Cors)
 	group := engine.Group("rbac")
-
-	share_rbac.RegisterRouter(group, jwt.NewAuth(auth.WithExpiry(7200), auth.WithSecret("www.sharelie.com")))
-	engine.Run("0.0.0.0:9091")
-}
-func initgrpc() {
-	service.NewGrpcService()
+	c := grpc.NewClient(grpc.WithBuildTargetFunc(func(namespace string) string { return "127.0.0.1:19091" }))
+	shareClient, err := c.GetShareClient("test")
+	if err != nil {
+		panic(err)
+	}
+	app.NewApiService(group, jwt.NewAuth(auth.WithExpiry(7200), auth.WithSecret("www.sharelie.com")), shareClient)
+	engine.Run(":9091")
 }
 
 func TestInitGrpc(t *testing.T) {
-	InitRbacDB()
-	initgrpc()
+	d := InitRbacDB()
+	s := server.Server{Address: "0.0.0.0:19091", Mode: "debug"}
+	gs, err := s.NewServer()
+	if err != nil {
+		panic(err)
+	}
+	app.NewGrpcService(d, gs)
 
 }
 

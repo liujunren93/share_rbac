@@ -6,15 +6,15 @@ option go_package = "../pb;pb";
 
 
 message PathCreateReq {
-   // @gotags: json:"domain_id" binding:"required"
+   // @gotags: json:"-" binding:"required"
    int64 DomainID = 1;
-  // @gotags: json:"component" binding:"required"
+  // @gotags: json:"component" binding:"required_if=PathType 1"
   string Component = 2;
   // @gotags: json:"redirect" 
   string Redirect = 3;
   // @gotags: json:"parent_id" 
   int64 ParentID = 4;
-  // @gotags: json:"path" binding:"required"
+  // @gotags: json:"path" 
   string Path = 5;
   // @gotags: json:"name" binding:"required"
   string Name = 6;
@@ -24,10 +24,17 @@ message PathCreateReq {
   map<string, string> Meta = 9;
   // @gotags: json:"api_path" binding:"required"
   string ApiPath=10;
+  // @gotags: json:"method" 
+  string Method=11;
+  // @gotags: json:"action" 
+  string Action=12;
+  // @gotags: json:"key" 
+  string Key=13;
+
 }
 
 message PathUpdateReq {
-  // @gotags: json:"domain_id" binding:"required"
+  // @gotags: json:"-" binding:"required"
   int64 DomainID = 1;
   // @gotags: json:"component" binding:"required_if=PathType 1"
   string Component = 2;
@@ -35,7 +42,7 @@ message PathUpdateReq {
   string Redirect = 3;
   // @gotags: json:"parent_id" 
   int64 ParentID = 4;
-  // @gotags: json:"path" binding:"required"
+  // @gotags: json:"path" 
   string Path = 5;
   // @gotags: json:"id" binding:"required"
   int64 ID = 6;
@@ -47,6 +54,12 @@ message PathUpdateReq {
   map<string, string> Meta = 9;
     // @gotags: json:"api_path" binding:"required"
   string ApiPath=10;
+  // @gotags: json:"method" 
+  string Method=11;
+    // @gotags: json:"action" 
+  string Action=12;
+  // @gotags: json:"key" 
+  string Key=13;
 
 }
 

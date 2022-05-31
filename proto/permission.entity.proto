@@ -3,14 +3,17 @@ package proto;
 option go_package = "../pb;pb";
 
 message PermissionListReq {
-  // @gotags: from:"name"
+  // @gotags: form:"name"
   string Name = 1;
-  // @gotags: from:"page_size"
+  // @gotags: form:"page_size"
   int64  PageSize = 2 ;
-  // @gotags: from:"page"
+  // @gotags: form:"page"
   int64  Page = 3;
-  // @gotags: from:"domain_id" 
+  // @gotags: form:"-" 
   int64 DomainID=4;
+   // @gotags: form:"status" 
+  int64 Status=5;
+
 }
 
 message PermissionCreateReq{
@@ -20,6 +23,8 @@ message PermissionCreateReq{
   string  Desc = 2;
   // @gotags: json:"domain_id" 
   int64 DomainID=3; 
+  // @gotags: json:"status" 
+  int64 Status=4;
 
 }
 
@@ -32,6 +37,8 @@ message PermissionUpdateReq{
   string  Desc = 3;
   // @gotags: json:"domain_id" 
   int64 DomainID=4;
+  // @gotags: json:"status" 
+ int64 Status=5;
 
 }
 
@@ -56,5 +63,9 @@ message PermissionPathSetReq {
   // @gotags: json:"path_ids" binding:"required"
   repeated int64 PathIDs = 2;
   // @gotags: json:"domain_id" 
+  int64 DomainID=3;
+}
+
+message GetDomainPolicyReq {
   int64 DomainID=3;
 }

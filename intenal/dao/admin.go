@@ -150,7 +150,7 @@ func (Admin) RoleList(req *pb.AdminRoleListReq) []model.RbacRole {
 	for _, v := range arList {
 		us.Add(v.RoleID)
 	}
-	return Role{}.list(DB, req.DomainID, "", us.List()...)
+	return Role{}.list(DB, req.DomainID, "", us.List())
 }
 
 func (Admin) SetRole(req *pb.AdminRoleSetReq) errors.Error {

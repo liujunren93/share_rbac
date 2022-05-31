@@ -56,7 +56,9 @@ service Rbac {
   rpc AdminMenuTree(AdminMenuTreeReq)returns(DefaultRes);
   rpc AdminInfo(DefaultPkReq)returns(LoginRes);
   rpc Login(LoginReq)returns(LoginRes);
-  rpc RolePermission(RolePermissionReq)returns(DefaultRes);
+  rpc RolePermission(RolePermissionReq)returns(DefaultRes); 
+
+  rpc GetDomainPolicy(GetDomainPolicyReq)returns(DefaultRes);
 
 }
 

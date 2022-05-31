@@ -55,10 +55,10 @@ message RolePermissionReq {
 }
 
 message RolePermissionSetReq{
-  // @gotags: json:"role_id" binding:"required"
+  // @gotags: json:"-" binding:"required"
   int64 RoleID = 1;
   // @gotags: json:"permission_ids" binding:"required"
   repeated int64 PermissionIDS = 2;
-  // @gotags: json:"domain_id" 
+  // @gotags: json:"-" 
   int64 DomainID=3;
 }

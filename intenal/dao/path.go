@@ -35,8 +35,9 @@ func (dao Path) List(req *pb.PathListReq) entity.PathListRes {
 		db = db.Where("path like ?", "%"+req.Path+"%")
 	}
 	db = db.Where("domain_id = ? or domain_id=-1", req.DomainID)
-	res.Total = dao.count(db)
-	if req.PageSize >= 0 {
+
+	if req.PageSize > 0 {
+		res.Total = dao.count(db)
 		db = db.Limit(pageSize(req.PageSize)).Offset(offset(req.PageSize, req.Page))
 	}
 
@@ -74,13 +75,13 @@ func (dao Path) pathMap(db *gorm.DB, selectField []string, ids ...uint) map[uint
 	return pathM
 }
 
-func (Path) Create(req *pb.PathCreateReq) errors.Error {
+func (Path) Create(req *pb.PathCreateReq) (uint, errors.Error) {
 	first := DB.Where("name=?", req.Name).First(&model.RbacPath{})
 	if first.RowsAffected > 0 {
-		return errors.NewDBDuplication("name")
+		return 0, errors.NewDBDuplication("name")
 	}
 	path := model.RbacPath{
-		Key:       helper.RandString(32),
+		Key:       req.Key,
 		Name:      req.Name,
 		Component: req.Component,
 		Redirect:  req.Redirect,
@@ -88,20 +89,23 @@ func (Path) Create(req *pb.PathCreateReq) errors.Error {
 		Path:      req.Path,
 		PathType:  int8(req.PathType),
 		DomainID:  int(req.DomainID),
+		ApiPath:   req.ApiPath,
+		Method:    req.Method,
+		Action:    req.Action,
 	}
 	if req.Meta != nil {
 		marshal, err := json.Marshal(req.Meta)
 		if err != nil {
 			log.Logger.Error(err)
-			return errors.InternalErrorMsg(err)
+			return 0, errors.InternalErrorMsg(err)
 		}
 		path.Meta = string(marshal)
 	}
 	err := DB.Create(&path).Error
 	if err != nil {
-		return errors.NewDBInternal(err)
+		return 0, errors.NewDBInternal(err)
 	}
-	return nil
+	return path.ID, nil
 
 }
 
@@ -172,7 +176,7 @@ func (dao Path) GetPathWithPermissionByUid(pathType int8, uid uint) []entity.Use
 		permissionSet.Add(v.PermissionID)
 		pathSet.Add(v.PathID)
 	}
-	pmap := Permission{}.permissionMap(DB, "", -1, 0, permissionSet.List()...)
+	pmap := Permission{}.permissionMap(DB, -1, 0, permissionSet.List()...)
 	pathList := Path{}.pathMap(DB, []string{"id", "name"}, pathSet.List()...)
 	for i, v := range resList {
 		resList[i].Path = pathList[v.PathID].Name
@@ -184,34 +188,27 @@ func (dao Path) GetPathWithPermissionByUid(pathType int8, uid uint) []entity.Use
 }
 
 //GetPathByUid 获取用户path
-func (dao Path) GetPathWithPermissionByRoles(pathType int8, roles []int64) []entity.UserPermission {
-	var resList []entity.UserPermission
+func (dao Path) GetPathActionsByRoles(pathType int8, roles []int64) map[string][]string {
+	var res = make(map[string][]string)
 
 	pids := Permission{}.getPermissionIDsByRoleIDs(roles)
 	permissionPathList := Permission{}.PermissionPathList(pids)
 	pathSet := set.NewSet[uint]()
-	permissionSet := set.NewSet[uint]()
+	// permissionSet := set.NewSet[uint]()
 	for _, v := range permissionPathList {
-		resList = append(resList, entity.UserPermission{
-			PID:        v.PermissionID,
-			PathID:     v.PathID,
-			ActionList: []string{},
-		})
-		permissionSet.Add(v.PermissionID)
+		// tmp[v.PathID] = append(tmp[v.PathID], v.PermissionID)
+		// permissionSet.Add(v.PermissionID)
 		pathSet.Add(v.PathID)
 	}
-	pmap := Permission{}.permissionMap(DB, "", -1, 0, permissionSet.List()...)
-	pathList := Path{}.pathMap(DB, []string{"id", "path"}, pathSet.List()...)
-	for i, v := range resList {
-		resList[i].Path = pathList[v.PathID].Path
-		if p, ok := pmap[v.PID]; ok {
-			// if p.Type == 1 {
-			// 	continue
-			// }
-			resList[i].ActionList = append(resList[i].ActionList, p.Name)
+	// pmap := Permission{}.permissionMap(DB, -1, 0, permissionSet.List()...)
+	pathList := Path{}.list(DB, []string{"id", "method", "`key`", "api_path", "action"}, pathSet.List()...)
+	for _, v := range pathList {
+		if v.Key == "" || v.Action == "" {
+			continue
 		}
+		res[v.Key] = append(res[v.Key], v.Action)
 	}
-	return resList
+	return res
 }
 
 func (dao Path) getPathByPIDs(pathType int8, permissionIDs ...uint) []model.RbacPath {

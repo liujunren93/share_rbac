@@ -20,6 +20,8 @@ message DomainListReq {
   int64  PageSize = 3 ;
   // @gotags: form:"page"
   int64  Page = 4;
+  // @gotags: form:"status"
+  int64 Status=5;
 }
 
 message DomainDelReq {

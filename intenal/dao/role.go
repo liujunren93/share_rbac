@@ -30,9 +30,12 @@ func (r Role) List(req *pb.RoleListReq) (res entity.RoleListRes) {
 	return
 }
 
-func (Role) list(db *gorm.DB, domainId int64, name string, ids ...uint) []model.RbacRole {
+func (Role) list(db *gorm.DB, domainId int64, name string, ids []uint) []model.RbacRole {
 	var list []model.RbacRole
-	db = db.Where("domain_id=? and id in ?", domainId, ids)
+	db = db.Where("domain_id=?", domainId)
+	if ids != nil {
+		db = db.Where("id in ?", ids)
+	}
 	if name != "" {
 		db = db.Where("name like ?", "%"+name+"%")
 	}
@@ -97,8 +100,13 @@ func (Role) RolePermissionList(req *pb.RolePermissionListReq) []model.RbacPermis
 	if uintSet.Len() == 0 {
 		return nil
 	}
-	return Permission{}.list(DB, "", -1, 0, uintSet.List()...)
+	return Permission{}.list(DB, -1, 0, uintSet.List()...)
 
+}
+func (Role) rolePermission(domainId int64, roleId []uint) []model.RbacRolePermission {
+	var list []model.RbacRolePermission
+	DB.Where("domain_id=? and role_id in ?", domainId, roleId).Find(&list)
+	return list
 }
 
 func (Role) RolePermissionSet(req *pb.RolePermissionSetReq) errors.Error {
@@ -148,4 +156,64 @@ func (Role) getRoleIdsByUID(uid uint) []uint {
 		uintSet.Add(user.RoleID)
 	}
 	return uintSet.List()
+}
+
+func (r Role) GetDomainPolicy(domainId int64) []entity.DomainPolicy {
+	roleList := r.list(DB, domainId, "", nil)
+	rset := set.NewSet[uint]()
+	for _, v := range roleList {
+		rset.Add(v.ID)
+	}
+	var list []entity.DomainPolicy
+	var pSet = set.NewSet[uint]()
+	rolePermissionList := r.rolePermission(domainId, rset.List())
+	for _, v := range rolePermissionList {
+		pSet.Add(v.PermissionID)
+		list = append(list, entity.DomainPolicy{
+			RoleID:       v.RoleID,
+			PermissionID: v.PermissionID,
+			ApiPath:      "",
+			Method:       "",
+		})
+	}
+	var pathSet = set.NewSet[uint]()
+	permissionPath := Permission{}.PermissionPathMap(pSet.List())
+	for _, paths := range permissionPath {
+		pathSet.Add(paths...)
+	}
+	if len(pathSet.List()) == 0 {
+		return nil
+	}
+	var resList []entity.DomainPolicy
+	for _, v := range list {
+		if pids, ok := permissionPath[v.PermissionID]; ok {
+			for _, pid := range pids {
+				resList = append(resList, entity.DomainPolicy{
+					RoleID:       v.RoleID,
+					PermissionID: v.PermissionID,
+					PathID:       pid,
+				})
+			}
+
+		}
+
+	}
+
+	pathMap := Path{}.pathMap(DB, []string{"id", "api_path", "method"}, pathSet.List()...)
+
+	j := 0
+
+	for _, v := range resList {
+		if p, ok := pathMap[v.PathID]; ok {
+			if p.ApiPath == "" || p.Method == "" {
+				continue
+			}
+			v.ApiPath = p.ApiPath
+			v.Method = p.Method
+			resList[j] = v
+			j++
+
+		}
+	}
+	return resList[:j]
 }
