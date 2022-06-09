@@ -14,6 +14,7 @@ import (
 	"github.com/liujunren93/share_rbac/service/api/middleware"
 	"github.com/liujunren93/share_rbac/service/rpc"
 	"github.com/liujunren93/share_utils/common/auth"
+	"github.com/liujunren93/share_utils/common/gin/router"
 	"github.com/liujunren93/share_utils/common/mq"
 	"github.com/liujunren93/share_utils/wrapper/breaker"
 	"github.com/liujunren93/share_utils/wrapper/metadata"
@@ -65,8 +66,9 @@ func (*Rbac) NewGrpcService(DB *gorm.DB, ser *server.GrpcServer) {
 	ser.Run()
 }
 
-func (r *Rbac) initRbacRoute(routerGroup *gin.RouterGroup, auther auth.Auther) (noAuth, auth *gin.RouterGroup, err error) {
-	session := routerGroup.Group("")
+func (r *Rbac) initRbacRoute(routerGroup *gin.RouterGroup, auther auth.Auther) (noAuth, auth router.RouterGroup, err error) {
+	session := router.NewRouterGroup(routerGroup)
+
 	var rbac = ctrl.RbacCtrl
 	session.Use(middleware.Session(auther), middleware.Rbac)
 	domian := session.Group("domain")
@@ -78,7 +80,7 @@ func (r *Rbac) initRbacRoute(routerGroup *gin.RouterGroup, auther auth.Auther) (
 		domian.GET("/:id", rbac.DomainInfo)
 	}
 
-	rauth := session.Group("auth")
+	rauth := session.Group("auth").White("rbac")
 	{
 		rauth.POST("/login", rbac.Login)
 		rauth.Use(middleware.Auth(auther))
@@ -103,8 +105,12 @@ func (r *Rbac) initRbacRoute(routerGroup *gin.RouterGroup, auther auth.Auther) (
 	adminRole := loginRouter.Group("adminRole")
 	{
 		adminRole.GET("/:id", rbac.AdminRoleList)
-		adminRole.POST("/:id", rbac.AdminRoleSet)
 
+	}
+	account := loginRouter.Group("account")
+	{
+		account.PUT("base", rbac.AccountEdit)
+		account.GET("base", rbac.AccountInfo).White("rbac")
 	}
 
 	permission := loginRouter.Group("permission")
@@ -120,7 +126,6 @@ func (r *Rbac) initRbacRoute(routerGroup *gin.RouterGroup, auther auth.Auther) (
 	{
 		permissionPath.GET("/:id", rbac.PermissionPathList)
 		permissionPath.PUT("/:id", rbac.PermissionPathSet)
-
 	}
 
 	role := loginRouter.Group("role")

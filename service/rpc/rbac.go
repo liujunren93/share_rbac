@@ -46,8 +46,27 @@ func (r *Rbac) Login(ctx context.Context, req *pb.LoginReq) (*pb.LoginRes, error
 	return &res, netHelper.RpcResponse(&res, err, data)
 }
 
+func (r *Rbac) AccountEdit(ctx context.Context, req *pb.AccountEditReq) (*pb.DefaultRes, error) {
+
+	err := dao.Admin{}.Update(&pb.AdminUpdateReq{
+		ID:       req.UID,
+		Name:     req.Name,
+		Password: req.Password,
+		DomainID: req.DomainID,
+	})
+	var res pb.DefaultRes
+	return &res, netHelper.RpcResponse(&res, err, nil)
+}
+
 func (r *Rbac) GetDomainPolicy(ctx context.Context, req *pb.GetDomainPolicyReq) (*pb.DefaultRes, error) {
 	userList := dao.Role{}.GetDomainPolicy(req.DomainID)
 	var res pb.DefaultRes
 	return &res, netHelper.RpcResponseString(&res, nil, userList)
+}
+
+func (r *Rbac) AccountInfo(ctx context.Context, req *pb.DefaultPkReq) (*pb.DefaultRes, error) {
+	ra := dao.Admin{}.Info(req, "name")
+	var res pb.DefaultRes
+
+	return &res, netHelper.RpcResponseString(&res, nil, ra)
 }

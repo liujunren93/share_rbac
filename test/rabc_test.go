@@ -1,6 +1,7 @@
 package test
 
 import (
+	"net/http"
 	"testing"
 
 	re "github.com/go-redis/redis/v8"
@@ -12,6 +13,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/liujunren93/share_rbac"
+
+	_ "net/http/pprof"
 
 	"github.com/liujunren93/share_utils/common/auth"
 	"github.com/liujunren93/share_utils/common/auth/jwt"
@@ -63,6 +66,7 @@ func initServer() {
 }
 
 func TestInitGrpc(t *testing.T) {
+	go http.ListenAndServe("0.0.0.0:6061", nil)
 	d := InitRbacDB()
 	s := server.Server{Address: "0.0.0.0:19091", Mode: "debug"}
 	gs, err := s.NewServer()
@@ -74,5 +78,6 @@ func TestInitGrpc(t *testing.T) {
 }
 
 func TestInitRbacRoute(t *testing.T) {
+	go http.ListenAndServe("0.0.0.0:6060", nil)
 	initServer()
 }

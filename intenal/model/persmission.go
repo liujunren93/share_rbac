@@ -7,7 +7,7 @@ package model
 
 type RbacPath struct {
 	ModelSmp
-	Key       string `gorm:"key;type:varchar(100);not null;default:'';comment:'key'" json:"key,omitempty"`
+	Key       string `gorm:"key;type:varchar(100);not null;default:'';comment:'前端权限组'" json:"key,omitempty"`
 	Name      string `gorm:"name;type:varchar(100);not null;default:'';comment:'name'" json:"name,omitempty"`
 	Action    string `gorm:"action;type:varchar(100);not null;default:'';comment:'方法:前端权限标识'" json:"action,omitempty"`
 	Path      string `gorm:"path;type:varchar(100);not null;default:'';comment:'path'" json:"path,omitempty"`
@@ -19,13 +19,13 @@ type RbacPath struct {
 	Method    string `gorm:"method;type:varchar(20);not null;default:'';comment:'api:method'" json:"method,omitempty"`
 	ApiPath   string `gorm:"api_path;type:varchar(100);not null;default:'';comment:'api:api_path'" json:"api_path"`
 	Status    uint   `gorm:"status;type:int;not null;default:1;comment:'1:启用,2:禁用'" json:"status,omitempty"`
-	DomainID  int    `gorm:"domain_id;type:int;not null;default:-1;comment:'-1:公共'" json:"-"`
+	DomainID  int    `gorm:"domain_id;index;type:int;not null;default:-1;comment:'-1:公共'" json:"-"`
 }
 
 type RbacPermission struct {
 	Model
 	// Type     int8   `gorm:"domain_id;type:tinyint(1);not null;default:1;comment:'1:普通权限,2:action;3:action+普通权限'" json:"-"`
-	DomainID int    `gorm:"domain_id;type:int;not null;default:0;comment:'-1:基础权限，所有域通用'" json:"-"`
+	DomainID int    `gorm:"domain_id;index;type:int;not null;default:0;comment:'-1:基础权限，所有域通用'" json:"-"`
 	Name     string `gorm:"name;type:varchar(100);not null;default:'';comment:'name'" json:"name"`
 	Status   uint   `gorm:"status;type:int;not null;default:1;comment:'1:启用,2:禁用'" json:"status,omitempty"`
 	Desc     string `gorm:"desc;type:varchar(100);not null;default:'';comment:'desc'" json:"desc"`

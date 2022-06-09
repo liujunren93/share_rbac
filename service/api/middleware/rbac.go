@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/liujunren93/share_rbac/pb"
 	"github.com/liujunren93/share_rbac/service/api/ctrl"
+	"github.com/liujunren93/share_utils/common/gin/router"
 	"github.com/liujunren93/share_utils/errors"
 	"github.com/liujunren93/share_utils/netHelper"
 )
@@ -13,6 +14,11 @@ func Rbac(ctx *gin.Context) {
 		ctx.Next()
 		return
 	}
+	if router.InWhitelist(ctx, "rbac") {
+		ctx.Next()
+		return
+	}
+
 	uid := ctx.GetInt64(pb.SESSION_UID.String())
 	domainId := ctx.GetInt64(pb.SESSION_DOMAIN_ID.String())
 	var roleIds []int64

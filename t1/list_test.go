@@ -2,26 +2,40 @@ package t1
 
 import (
 	"fmt"
+	"strings"
 	"testing"
+
+	"github.com/casbin/casbin/v2"
 )
 
-func TestList(t *testing.T) {
-	var a = make(map[interface{}]interface{})
-	// fmt.Println(aa == bb)
-	a[aa] = aa
-	a[bb] = bb
-	for _, v := range a {
-		v.(ftyp)("")
+var str = `admin, domain1, /rbac/path/:id, GET
+admin, domain1, data1, write
+admin, domain2, data2, read
+admin, domain2, data2, write`
+
+var prolicy [][]string
+
+func init() {
+	str = strings.ReplaceAll(str, " ", "")
+	data := strings.Split(str, "\n")
+	for _, v := range data {
+		da := strings.Split(v, ",")
+
+		prolicy = append(prolicy, da)
+
 	}
+	fmt.Println(prolicy)
 }
+func TestList(t *testing.T) {
+	e, err := casbin.NewEnforcer("./model.conf")
+	if err != nil {
+		panic(err)
+	}
 
-type ftyp func(string) string
+	e.AddPolicies(prolicy)
+	e.AddGroupingPolicies([]string{"alice", "admin", "domain1"})
 
-var aa ftyp = func(string) string {
-	fmt.Println(1)
-	return ""
-}
-var bb ftyp = func(string) string {
-	fmt.Println(2)
-	return ""
+	ok, err := e.Enforce("alice", "domain1", "/rbac/path/1", "GET")
+	fmt.Println(ok, err)
+
 }

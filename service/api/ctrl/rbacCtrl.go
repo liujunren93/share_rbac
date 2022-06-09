@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/liujunren93/share_rbac/pb"
 	"github.com/liujunren93/share_utils/common/auth"
@@ -19,9 +20,12 @@ import (
 * @Date: 2022/2/28 11:44
  */
 type rbacCtrl struct {
-	Auther     auth.Auther
-	mq         mq.Mqer
-	grpcClient pb.RbacClient
+	Auther         auth.Auther
+	mq             mq.Mqer
+	grpcClient     pb.RbacClient
+	syncedEnforcer *casbin.SyncedEnforcer
+	casOnce        *sync.Once
+	prolicyMap     sync.Map
 }
 
 var (
@@ -41,6 +45,8 @@ func InitRbacCtrl(Auther auth.Auther, mq mq.Mqer, grpcClient grpc.ClientConnInte
 			Auther:     Auther,
 			mq:         mq,
 			grpcClient: pb.NewRbacClient(grpcClient),
+			casOnce:    &sync.Once{},
+			prolicyMap: sync.Map{},
 		}
 	})
 
@@ -159,7 +165,7 @@ func (ctrl *rbacCtrl) AdminRoleList(ctx *gin.Context) {
 	var req pb.AdminRoleListReq
 	atoi, _ := strconv.Atoi(ctx.Param("id"))
 	req.DomainID = ctx.GetInt64(DOMIAN_ID)
-	req.RoleID = int64(atoi)
+	req.UID = int64(atoi)
 
 	update, err := ctrl.grpcClient.MAdminRoleList(ctx, &req)
 	netHelper.Response(ctx, update, err, nil)
@@ -174,7 +180,7 @@ func (ctrl *rbacCtrl) AdminRoleSet(ctx *gin.Context) {
 		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
 		return
 	}
-	req.AdminID = int64(atoi)
+	req.UID = int64(atoi)
 	update, err := ctrl.grpcClient.MAdminRoleSet(ctx, &req)
 	netHelper.Response(ctx, update, err, nil)
 }
@@ -433,7 +439,6 @@ func (ctrl *rbacCtrl) Login(ctx *gin.Context) {
 	ctrl.Auther.SetData(ROLES, res.Data.RoleIDs)
 	t, err := ctrl.Auther.Token("")
 	netHelper.Response(ctx, nil, err, map[string]interface{}{"token": t, "user_info": res.Data})
-	return
 
 }
 
@@ -445,7 +450,27 @@ func (ctrl *rbacCtrl) UserInfo(ctx *gin.Context) {
 	}
 	lr, err := ctrl.grpcClient.AdminInfo(ctx, &req)
 	netHelper.Response(ctx, lr, err, nil)
-	return
+}
+
+func (ctrl *rbacCtrl) AccountInfo(ctx *gin.Context) {
+	uid := ctx.GetInt64(UID)
+	req := pb.DefaultPkReq{
+		Pk:       &pb.DefaultPkReq_ID{ID: uid},
+		DomainID: ctx.GetInt64(DOMIAN_ID),
+	}
+	lr, err := ctrl.grpcClient.AccountInfo(ctx, &req)
+	netHelper.Response(ctx, lr, err, nil)
+}
+func (ctrl *rbacCtrl) AccountEdit(ctx *gin.Context) {
+	var req pb.AccountEditReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		return
+	}
+	req.DomainID = ctx.GetInt64(DOMIAN_ID)
+	req.UID = ctx.GetInt64(UID)
+	res, err := ctrl.grpcClient.AccountEdit(ctx, &req)
+	netHelper.Response(ctx, res, err, nil)
 }
 
 func (ctrl *rbacCtrl) Permission(ctx *gin.Context) {
@@ -457,5 +482,4 @@ func (ctrl *rbacCtrl) Permission(ctx *gin.Context) {
 	}
 	lr, err := ctrl.grpcClient.RolePermission(ctx, &req)
 	netHelper.Response(ctx, lr, err, nil)
-	return
 }

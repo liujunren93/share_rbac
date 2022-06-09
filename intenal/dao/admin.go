@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"strings"
+
 	"github.com/liujunren93/share_rbac/intenal/entity"
 	"github.com/liujunren93/share_rbac/intenal/model"
 	"github.com/liujunren93/share_rbac/log"
@@ -24,6 +26,12 @@ func (Admin) List(req *pb.AdminListReq) (res entity.AdminListRes) {
 	if req.Name != "" {
 		db = db.Where("name like ?", "%"+req.Name+"%")
 	}
+	if req.Account != "" {
+		db = db.Where("account like ?", "%"+req.Account+"%")
+	}
+	if req.Status != 0 {
+		db = db.Where("status = ?", req.Status)
+	}
 	db.Model(&model.RbacAdmin{}).Count(&res.Total)
 	db.Limit(pageSize(req.PageSize)).Offset(offset(req.PageSize, req.Page)).Find(&res.List)
 	return
@@ -44,6 +52,7 @@ func (Admin) Create(req *pb.AdminCreateReq) errors.Error {
 		Account:  req.Account,
 		Name:     req.Name,
 		Password: password,
+		Status:   uint(req.Status),
 	}).Error
 	if err != nil {
 		return errors.NewDBInternal(err)
@@ -52,9 +61,13 @@ func (Admin) Create(req *pb.AdminCreateReq) errors.Error {
 
 }
 
-func (Admin) Info(req *pb.DefaultPkReq) model.RbacAdmin {
+func (Admin) Info(req *pb.DefaultPkReq, fields ...string) model.RbacAdmin {
 	var info model.RbacAdmin
-	DB.Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).First(&info)
+	db := DB
+	if len(fields) != 0 {
+		db = db.Select(strings.Join(fields, ","))
+	}
+	db.Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).First(&info)
 	return info
 }
 
@@ -85,7 +98,7 @@ func (Admin) Update(req *pb.AdminUpdateReq) errors.Error {
 func (Admin) Login(req *pb.LoginReq) (*pb.LoginResData, errors.Error) {
 	var info model.RbacAdmin
 	var res pb.LoginResData
-	first := DB.Where(" domain_id=? and account=? ", req.DomainID, req.Account).First(&info)
+	first := DB.Where(" domain_id=? and account=? and status=1", req.DomainID, req.Account).First(&info)
 	if first.RowsAffected == 0 {
 		return &res, errors.NewUnauthorized("")
 	}
@@ -142,7 +155,7 @@ func (Admin) MenuTree(roleIDs []int64) interface{} {
 
 func (Admin) RoleList(req *pb.AdminRoleListReq) []model.RbacRole {
 	var arList []model.RbacRoleUser
-	d := DB.Where("role_id=? and domain_id=?", req.RoleID, req.DomainID).Find(&arList)
+	d := DB.Where("domain_id=? and uid=?  ", req.DomainID, req.UID).Find(&arList)
 	if d.RowsAffected == 0 {
 		return nil
 	}
@@ -156,13 +169,13 @@ func (Admin) RoleList(req *pb.AdminRoleListReq) []model.RbacRole {
 func (Admin) SetRole(req *pb.AdminRoleSetReq) errors.Error {
 	var err error
 	if len(req.RoleIDs) == 0 {
-		err := DB.Where("domain_id=? and uid=? ", req.DomainID, req.AdminID).Delete(&model.RbacRoleUser{}).Error
+		err := DB.Where("domain_id=? and uid=? ", req.DomainID, req.UID).Delete(&model.RbacRoleUser{}).Error
 		if err != nil {
 			log.Logger.Error(err)
 			return errors.NewDBInternal(err)
 		}
 	} else {
-		err := DB.Where("domain_id=? and uid=? and role_id not in ?", req.DomainID, req.AdminID, req.RoleIDs).Delete(&model.RbacRoleUser{}).Error
+		err := DB.Where("domain_id=? and uid=? and role_id not in ?", req.DomainID, req.UID, req.RoleIDs).Delete(&model.RbacRoleUser{}).Error
 		if err != nil {
 			log.Logger.Error(err)
 			return errors.NewDBInternal(err)
@@ -170,7 +183,7 @@ func (Admin) SetRole(req *pb.AdminRoleSetReq) errors.Error {
 	}
 
 	var list []model.RbacRoleUser
-	DB.Where("domain_id=? and uid=? ", req.DomainID, req.AdminID).Find(&list)
+	DB.Where("domain_id=? and uid=? ", req.DomainID, req.UID).Find(&list)
 	us := set.NewSet[uint]()
 	for _, v := range list {
 		us.Add(v.RoleID)
@@ -184,7 +197,7 @@ func (Admin) SetRole(req *pb.AdminRoleSetReq) errors.Error {
 		newData = append(newData, model.RbacRoleUser{
 			DomainID: uint(req.DomainID),
 			RoleID:   v,
-			UID:      uint(req.AdminID),
+			UID:      uint(req.UID),
 		})
 	}
 

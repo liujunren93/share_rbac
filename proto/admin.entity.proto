@@ -11,8 +11,10 @@ message AdminCreateReq {
   string Name = 2;
   // @gotags: json:"password" binding:"required"
   string Password = 3;
-  // @gotags: json:"domain_id" binding:"required"
+  // @gotags: json:"domain_id"
   int64 DomainID=4;
+   // @gotags: json:"status"
+   int64 Status=5;
 }
 
 message AdminUpdateReq {
@@ -22,8 +24,10 @@ message AdminUpdateReq {
   string Name = 2;
   // @gotags: json:"password"
   string Password = 3;
-  // @gotags: json:"domain_id" binding:"required"
+  // @gotags: json:"domain_id" 
   int64 DomainID=4;
+  // @gotags: json:"status"
+  int64 Status=5;
 }
 
 
@@ -36,6 +40,10 @@ message AdminListReq {
   string Name = 3;
   // @gotags: form:"domain_id" binding:"required"
   int64 DomainID=4;
+  // @gotags: form:"status"
+  int64 Status=5;
+  // @gotags: form:"account"
+  string Account=6;
 }
 
 message AdminDelReq {
@@ -73,6 +81,17 @@ message LoginResData{
  repeated int64  RoleIDs=3;
 }
 
+message AccountEditReq{
+    // @gotags: json:"name"
+  string name=1;
+  // @gotags: json:"password"
+  string password=2;
+    // @gotags: json:"-" 
+  int64 DomainID=3;
+    // @gotags: json:"-" 
+  int64 UID = 4;
+}
+
 message AdminMenuTreeReq {
   // @gotags: form:"-" 
  repeated int64 RoleIDs = 1;
@@ -85,8 +104,8 @@ message AdminMenuTreeReq {
 message AdminRoleListReq {
   // @gotags: form:"domain_id" 
   int64 DomainID=1;
-  // @gotags: form:"role_id" 
-  int64 RoleID = 2;
+  // @gotags: form:"uid" 
+  int64 UID = 2;
 }
 
 
@@ -95,7 +114,7 @@ message AdminRoleSetReq {
   int64 DomainID=1;
   // @gotags: json:"role_ids" 
   repeated int64 RoleIDs = 2;
-  // @gotags: json:"admin_id" 
-  int64 AdminID =3;
+  // @gotags: json:"uid" 
+  int64 UID =3;
 
 }

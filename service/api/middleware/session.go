@@ -25,12 +25,15 @@ func Session(auther auth.Auther) func(*gin.Context) {
 				ctx.Set(ctrl.DOMIAN_ID, int64(domain.(float64)))
 			}
 			if roles, ok := data[ctrl.ROLES]; ok {
-				da, err := helper.InterfaceSlice2NumberSlice[float64](roles.([]interface{}))
-				if err != nil {
-					log.Logger.Error(err)
-					return
+				if roles != nil {
+					da, err := helper.InterfaceSlice2NumberSlice[float64](roles.([]interface{}))
+					if err != nil {
+						log.Logger.Error(err)
+						return
+					}
+					ctx.Set(ctrl.ROLES, helper.TransSliceType[float64, int64](da))
 				}
-				ctx.Set(ctrl.ROLES, helper.TransSliceType[float64, int64](da))
+
 			}
 			if uid, ok := data[ctrl.UID]; ok {
 				ctx.Set(ctrl.UID, int64(uid.(float64)))

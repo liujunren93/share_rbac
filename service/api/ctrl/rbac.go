@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"os"
 	"strconv"
 
 	"github.com/casbin/casbin/v2"
@@ -14,7 +12,6 @@ import (
 	"github.com/liujunren93/share_rbac/intenal/entity"
 	"github.com/liujunren93/share_rbac/log"
 	"github.com/liujunren93/share_rbac/pb"
-	"github.com/liujunren93/share_utils/common/casbin/adapter/simple"
 	"github.com/liujunren93/share_utils/common/storage/lru"
 )
 
@@ -35,7 +32,7 @@ g = _, _, _
 e = some(where (p.eft == allow))
 
 [matchers]
-m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
+m = g(r.sub, p.sub, r.dom) && r.dom == p.dom &&  keyMatch2(r.obj, p.obj)  && regexMatch(r.act, p.act)
 `
 
 func init() {
@@ -43,75 +40,93 @@ func init() {
 	localStorage, _ = lru.NewLRU[[][]string](0, 86400)
 }
 
-func (*rbacCtrl) userPolicy(uid, domainId int64, roleIds []int64) ([][]string, error) {
-	var prolicy = make([][]string, 0, len(roleIds))
-	for _, v := range roleIds {
-		prolicy = append(prolicy, []string{"g", strconv.Itoa(int(uid)), strconv.Itoa(int(v)), strconv.Itoa(int(domainId))})
-	}
-	return prolicy, nil
-}
-func (r *rbacCtrl) domainPolicy(ctx context.Context, domainId int64) ([][]string, error) {
-	var prolicy [][]string
-	if value, ok := localStorage.Get(domainId); !ok {
+func (ctrl *rbacCtrl) initCasPolicy() error {
+	var err error
+	if ctrl.syncedEnforcer == nil {
+		ctrl.casOnce.Do(func() {
+			ctrl.syncedEnforcer, err = casbin.NewSyncedEnforcer(casBinMode)
+			if err != nil {
+				log.Logger.Error("initCasPolicy.NewSyncedEnforcer", err)
 
+			}
+
+		})
+	}
+	return err
+
+}
+
+func (ctrl *rbacCtrl) domainPolicy(ctx context.Context, domainId int64) error {
+	key := fmt.Sprintf("p_%d", domainId)
+
+	if _, ok := ctrl.prolicyMap.Load(key); !ok {
+		var prolicy [][]string
+		if err := ctrl.initCasPolicy(); err != nil {
+			return err
+		}
 		req := pb.GetDomainPolicyReq{DomainID: domainId}
-		dr, err := r.grpcClient.GetDomainPolicy(ctx, &req)
+		dr, err := ctrl.grpcClient.GetDomainPolicy(ctx, &req)
 		if err != nil {
-			log.Logger.Error(err)
-			return nil, err
+			log.Logger.Error("domainPolicy.GetDomainPolicy", err)
+			return err
 		}
 		var data []entity.DomainPolicy
 		err = json.Unmarshal([]byte(dr.Data), &data)
 		if err != nil {
-			log.Logger.Error(err)
-			return nil, err
+			log.Logger.Error("domainPolicy.Unmarshal", err)
+			return err
 		}
 		prolicy = make([][]string, 0, len(data))
 		for _, v := range data {
 			// //p, admin, domain1, data1, read
-			prolicy = append(prolicy, []string{"p", strconv.Itoa(int(v.RoleID)), strconv.Itoa(int(domainId)), v.ApiPath, v.Method})
+			prolicy = append(prolicy, []string{strconv.Itoa(int(v.RoleID)), strconv.Itoa(int(domainId)), v.ApiPath, v.Method})
 		}
-		// localStorage.Add(domainId, prolicy)
-	} else {
-		prolicy = value
+		_, err = ctrl.syncedEnforcer.AddPolicies(prolicy)
+		if err != nil {
+			log.Logger.Error("domainPolicy.AddPolicy", err)
+			return err
+		}
+		ctrl.prolicyMap.Store(key, struct{}{})
 	}
-	return prolicy, nil
+
+	return nil
+
+}
+
+func (ctrl *rbacCtrl) userPolicy(uid, domainId int64, roleIds []int64) error {
+
+	key := fmt.Sprintf("g_%d_%d", domainId, uid)
+	if _, ok := ctrl.prolicyMap.Load(key); !ok {
+		var prolicy = make([][]string, 0, len(roleIds))
+		for _, v := range roleIds {
+			prolicy = append(prolicy, []string{strconv.Itoa(int(uid)), strconv.Itoa(int(v)), strconv.Itoa(int(domainId))})
+		}
+		_, err := ctrl.syncedEnforcer.AddGroupingPolicies(prolicy)
+		if err != nil {
+			log.Logger.Error("userPolicy.AddPolicy", err)
+			return err
+		}
+		ctrl.prolicyMap.Store(key, struct{}{})
+
+	}
+	return nil
+
 }
 
 func (ctrl *rbacCtrl) CheckPermission(ctx context.Context, reqPath, method string, roleIds []int64, uid, domainId int64) error {
-	domainPolicy, err := ctrl.domainPolicy(ctx, domainId)
+	err := ctrl.domainPolicy(ctx, domainId)
 	if err != nil {
-		log.Logger.Error("CheckPermission.domainPolicy", err)
+		log.Logger.Debug("CheckPermission.domainPolicy", err)
 		return err
 	}
-	userPolicy, err := ctrl.userPolicy(uid, domainId, roleIds)
+	err = ctrl.userPolicy(uid, domainId, roleIds)
 	if err != nil {
-		log.Logger.Error("CheckPermission.userPolicy", err)
+		log.Logger.Debug("CheckPermission.userPolicy", err)
 		return err
-	}
-	domainPolicy = append(domainPolicy, userPolicy...)
-	b, _ := json.Marshal(domainPolicy)
-	fmt.Println(string(b))
-	f, _ := os.Create("./1.csy")
-	tmp := ""
-	for _, datas := range domainPolicy {
-
-		for _, v := range datas {
-			tmp += v + ","
-		}
-		tmp = tmp[:len(tmp)-1]
-		tmp += "\n"
 	}
 
-	io.WriteString(f, tmp)
-	f.Close()
-	e, err := casbin.NewEnforcer(casBinMode, simple.NewAdapter(domainPolicy))
-	if err != nil {
-		log.Logger.Error("CheckPermission.casbin.NewEnforcer", err)
-		return err
-	}
-	// ok, err := e.Enforce("1", "1", reqPath, method)
-	ok, err := e.Enforce("1", "1", "/rbac/path", "GET")
+	// ok, err := e.Enforce(uid, domain, source, method)
+	ok, err := ctrl.syncedEnforcer.Enforce(strconv.Itoa(int(uid)), strconv.Itoa(int(domainId)), reqPath, method)
 	if err != nil {
 		log.Logger.Error("CheckPermission.casbin.Enforce", err)
 		return err
@@ -119,6 +134,5 @@ func (ctrl *rbacCtrl) CheckPermission(ctx context.Context, reqPath, method strin
 	if ok {
 		return nil
 	}
-
 	return errors.New("Forbidden")
 }
