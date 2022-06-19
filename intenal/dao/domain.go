@@ -34,9 +34,15 @@ func (Domain) List(req *pb.DomainListReq) entity.DomainListRes {
 	return res
 }
 
-func (Domain) Info(req *pb.DefaultPkReq) model.RbacDomain {
+func (dao Domain) Info(req *pb.DefaultPkReq) model.RbacDomain {
 	var info model.RbacDomain
-	DB.Where("id = ?", req.Pk.(*pb.DefaultPkReq_ID).ID).First(&info)
+	dao.info(req.Pk.(*pb.DefaultPkReq_ID).ID)
+	return info
+}
+
+func (Domain) info(id int64) model.RbacDomain {
+	var info model.RbacDomain
+	DB.Where("id = ?", id).First(&info)
 	return info
 }
 

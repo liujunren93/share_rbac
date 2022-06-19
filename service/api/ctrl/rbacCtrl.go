@@ -1,6 +1,7 @@
 package ctrl
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"sync"
@@ -26,6 +27,7 @@ type rbacCtrl struct {
 	syncedEnforcer *casbin.SyncedEnforcer
 	casOnce        *sync.Once
 	prolicyMap     sync.Map
+	ctx            context.Context
 }
 
 var (
@@ -39,7 +41,7 @@ var (
 	rbacCtrlOnce = &sync.Once{}
 )
 
-func InitRbacCtrl(Auther auth.Auther, mq mq.Mqer, grpcClient grpc.ClientConnInterface) {
+func InitRbacCtrl(ctx context.Context, Auther auth.Auther, mq mq.Mqer, grpcClient grpc.ClientConnInterface) {
 	rbacCtrlOnce.Do(func() {
 		RbacCtrl = &rbacCtrl{
 			Auther:     Auther,
@@ -47,6 +49,7 @@ func InitRbacCtrl(Auther auth.Auther, mq mq.Mqer, grpcClient grpc.ClientConnInte
 			grpcClient: pb.NewRbacClient(grpcClient),
 			casOnce:    &sync.Once{},
 			prolicyMap: sync.Map{},
+			ctx:        ctx,
 		}
 	})
 
@@ -440,6 +443,24 @@ func (ctrl *rbacCtrl) Login(ctx *gin.Context) {
 	t, err := ctrl.Auther.Token("")
 	netHelper.Response(ctx, nil, err, map[string]interface{}{"token": t, "user_info": res.Data})
 
+}
+
+type RefreshTokenReq struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+func (ctrl *rbacCtrl) RefreshToken(ctx *gin.Context) {
+	var req RefreshTokenReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		return
+	}
+	ntoken, err := ctrl.Auther.Token(req.RefreshToken)
+	if err != nil {
+		netHelper.Response(ctx, errors.NewUnauthorized(""), err, nil)
+		return
+	}
+	netHelper.Response(ctx, nil, err, map[string]interface{}{"token": ntoken})
 }
 
 func (ctrl *rbacCtrl) UserInfo(ctx *gin.Context) {

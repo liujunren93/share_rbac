@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/liujunren93/share_rbac/intenal/dao"
@@ -15,7 +16,7 @@ const (
 )
 
 func (r *Rbac) Publish(ctx context.Context, key string, val interface{}) error {
-	if val != nil {
+	if val == nil {
 		return nil
 	}
 	ctx, cf := context.WithTimeout(ctx, time.Second*3)
@@ -99,9 +100,16 @@ func (r *Rbac) MRoleCreate(ctx context.Context, req *pb.RoleCreateReq) (*pb.Defa
 }
 
 func (r *Rbac) MRoleUpdate(ctx context.Context, req *pb.RoleUpdateReq) (*pb.DefaultRes, error) {
-	err := dao.Role{}.Update(req)
 	var res pb.DefaultRes
-	r.Publish(ctx, REDISKEY_MQ_DOMAIN_PERSMISSION, req.DomainID)
+	err := dao.Role{}.Update(req)
+	if err != nil {
+		return &res, netHelper.RpcResponse(&res, err, nil)
+	}
+
+	err1 := r.Publish(ctx, REDISKEY_MQ_DOMAIN_PERSMISSION, req.DomainID)
+	if err1 != nil {
+		fmt.Println(err1)
+	}
 	return &res, netHelper.RpcResponse(&res, err, nil)
 }
 

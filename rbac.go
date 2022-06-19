@@ -49,20 +49,20 @@ func session(ctx context.Context) string {
 	}
 
 }
-func (r *Rbac) NewApiService(group *gin.RouterGroup, auther auth.Auther, cli *client.Client) {
+func (r *Rbac) NewApiService(ctx context.Context, group *gin.RouterGroup, auther auth.Auther, cli *client.Client) {
 	cli.AddOptions(client.WithCallWrappers(metadata.NewClientWrapper("rbac_session", session)), client.WithCallWrappers(breaker.NewClientWrapper()))
 	cci, err := cli.Client(r.serverName)
 	if err != nil {
 		log.Logger.Error(err)
 		return
 	}
-	ctrl.InitRbacCtrl(auther, r.mq, cci)
+	ctrl.InitRbacCtrl(ctx, auther, r.mq, cci)
 	r.initRbacRoute(group, auther)
 }
 
-func (*Rbac) NewGrpcService(DB *gorm.DB, ser *server.GrpcServer) {
+func (r *Rbac) NewGrpcService(DB *gorm.DB, ser *server.GrpcServer) {
 	dao.InitDB(DB)
-	pb.RegisterRbacServer(ser.Server(), rpc.NewRbacServer())
+	pb.RegisterRbacServer(ser.Server(), rpc.NewRbacServer(r.mq))
 	ser.Run()
 }
 
@@ -83,7 +83,9 @@ func (r *Rbac) initRbacRoute(routerGroup *gin.RouterGroup, auther auth.Auther) (
 	rauth := session.Group("auth").White("rbac")
 	{
 		rauth.POST("/login", rbac.Login)
+		rauth.POST("/refreshToken", rbac.RefreshToken)
 		rauth.Use(middleware.Auth(auther))
+
 		rauth.GET("/userInfo", rbac.UserInfo)
 		rauth.GET("/permission", rbac.Permission)
 		rauth.GET("/menu", rbac.UserMenu)

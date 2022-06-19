@@ -12,6 +12,8 @@ func Auth(auther auth.Auther) func(ctx *gin.Context) {
 		if ctx.GetBool(ISLOGIN) {
 			ctx.Next()
 		} else {
+			// reflushToken := ctx.Request.Header.Get("ReflushToken")
+
 			netHelper.Response(ctx, errors.NewUnauthorized(""), nil, nil)
 			ctx.Abort()
 			return

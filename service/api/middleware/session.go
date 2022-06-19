@@ -13,10 +13,16 @@ const ISLOGIN = "is_login"
 
 func Session(auther auth.Auther) func(*gin.Context) {
 	return func(ctx *gin.Context) {
+		// fmt.Printf(ctx.Request.RequestURI)
+		// if ctx.Request.RequestURI != "/rbac/auth/login" && ctx.Request.RequestURI != "/rbac/auth/refreshToken" {
+		// 	ctx.JSON(200, map[string]interface{}{"code": 4001})
+		// 	ctx.Abort()
+		// 	return
+		// }
 
 		token := ctx.Request.Header.Get("Authorization")
-		authData, err := auther.Inspect(token)
-		if err != nil {
+		authData, tp, err := auther.Inspect(token)
+		if err != nil || tp != 1 {
 			ctx.Next()
 			return
 		}

@@ -1,6 +1,7 @@
 package test
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -61,7 +62,8 @@ func initServer() {
 	if err != nil {
 		panic(err)
 	}
-	app.NewApiService(group, jwt.NewAuth(auth.WithExpiry(7200), auth.WithSecret("www.sharelie.com")), shareClient)
+
+	app.NewApiService(context.TODO(), group, jwt.NewAuth(auth.WithExpiry(1000), auth.WithSecret("www.sharelie.com")), shareClient)
 	engine.Run(":9091")
 }
 

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
@@ -13,6 +14,10 @@ import (
 	"github.com/liujunren93/share_rbac/log"
 	"github.com/liujunren93/share_rbac/pb"
 	"github.com/liujunren93/share_utils/common/storage/lru"
+)
+
+const (
+	REDISKEY_MQ_DOMAIN_PERSMISSION = "rbac_mq_permission_change_domain"
 )
 
 var localStorage *lru.LRU[[][]string]
@@ -49,6 +54,7 @@ func (ctrl *rbacCtrl) initCasPolicy() error {
 				log.Logger.Error("initCasPolicy.NewSyncedEnforcer", err)
 
 			}
+			go ctrl.monitorRabc(ctrl.ctx)
 
 		})
 	}
@@ -60,6 +66,7 @@ func (ctrl *rbacCtrl) domainPolicy(ctx context.Context, domainId int64) error {
 	key := fmt.Sprintf("p_%d", domainId)
 
 	if _, ok := ctrl.prolicyMap.Load(key); !ok {
+		fmt.Println("reload domainPolicy")
 		var prolicy [][]string
 		if err := ctrl.initCasPolicy(); err != nil {
 			return err
@@ -135,4 +142,33 @@ func (ctrl *rbacCtrl) CheckPermission(ctx context.Context, reqPath, method strin
 		return nil
 	}
 	return errors.New("Forbidden")
+}
+
+func (ctrl *rbacCtrl) monitorRabc(ctx context.Context) {
+	fmt.Println("monitorRabc")
+	ch := ctrl.mq.Subscribe(ctx, REDISKEY_MQ_DOMAIN_PERSMISSION)
+	for {
+		fmt.Println(111)
+		select {
+		case msg := <-ch:
+			fmt.Println("monitorRabc delete")
+			if msg.Topic == REDISKEY_MQ_DOMAIN_PERSMISSION {
+				domainId := msg.Data.(string)
+				ctrl.prolicyMap.Delete(fmt.Sprintf("p_%s", domainId))
+				prefix := fmt.Sprintf("g_%s", domainId)
+				ctrl.prolicyMap.Range(func(key, value any) bool {
+					if strings.Index(key.(string), prefix) >= 0 {
+						ctrl.prolicyMap.Delete(key)
+					}
+					return true
+				})
+				ctrl.prolicyMap.Range(func(key, value any) bool {
+					fmt.Println(key, value)
+					return true
+				})
+			}
+		case <-ctx.Done():
+			return
+		}
+	}
 }

@@ -3,7 +3,6 @@ module github.com/liujunren93/share_rbac
 go 1.18
 
 require (
-	github.com/casbin/casbin v1.9.1
 	github.com/casbin/casbin/v2 v2.47.1
 	github.com/gin-gonic/gin v1.8.0
 	github.com/go-redis/redis/v8 v8.11.5

@@ -96,6 +96,10 @@ func (Admin) Update(req *pb.AdminUpdateReq) errors.Error {
 	return nil
 }
 func (Admin) Login(req *pb.LoginReq) (*pb.LoginResData, errors.Error) {
+	domainInfo := Domain{}.info(req.DomainID)
+	if domainInfo.Status != 1 {
+		return nil, errors.New(errors.StatusDomainDisable, "域不存在或被禁用")
+	}
 	var info model.RbacAdmin
 	var res pb.LoginResData
 	first := DB.Where(" domain_id=? and account=? and status=1", req.DomainID, req.Account).First(&info)

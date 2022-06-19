@@ -18,8 +18,8 @@ type Rbac struct {
 	mq mq.Mqer
 }
 
-func NewRbacServer() *Rbac {
-	return &Rbac{}
+func NewRbacServer(mq mq.Mqer) *Rbac {
+	return &Rbac{mq: mq}
 }
 
 func (r *Rbac) AdminMenuTree(ctx context.Context, req *pb.AdminMenuTreeReq) (*pb.DefaultRes, error) {

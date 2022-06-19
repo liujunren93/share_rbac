@@ -7,7 +7,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 
 # This program built for i386-apple-darwin11.3.0
 
-# Make data base, printed on Thu Jun  9 12:17:37 2022
+# Make data base, printed on Sat Jun 18 21:58:17 2022
 
 # Variables
 
@@ -28,7 +28,7 @@ CURDIR := /Library/WebServer/Documents/gowork/share/share_rbac
 # makefile
 SHELL = /bin/sh
 # environment
-VSCODE_NLS_CONFIG = {"locale":"zh-cn","availableLanguages":{"*":"zh-cn"},"_languagePackId":"42e84e0914b17800d483f69e299e1b00.zh-cn","_translationsConfigFile":"/Users/liujunren/Library/Application Support/Code/clp/42e84e0914b17800d483f69e299e1b00.zh-cn/tcf.json","_cacheRoot":"/Users/liujunren/Library/Application Support/Code/clp/42e84e0914b17800d483f69e299e1b00.zh-cn","_resolvedLanguagePackCoreLocation":"/Users/liujunren/Library/Application Support/Code/clp/42e84e0914b17800d483f69e299e1b00.zh-cn/c3511e6c69bb39013c4a4b7b9566ec1ca73fc4d5","_corruptedFile":"/Users/liujunren/Library/Application Support/Code/clp/42e84e0914b17800d483f69e299e1b00.zh-cn/corrupted.info","_languagePackSupport":true}
+VSCODE_NLS_CONFIG = {"locale":"zh-cn","availableLanguages":{"*":"zh-cn"},"_languagePackId":"bbca1a7059cee8a1b93da8947fee1c4f.zh-cn","_translationsConfigFile":"/Users/liujunren/Library/Application Support/Code/clp/bbca1a7059cee8a1b93da8947fee1c4f.zh-cn/tcf.json","_cacheRoot":"/Users/liujunren/Library/Application Support/Code/clp/bbca1a7059cee8a1b93da8947fee1c4f.zh-cn","_resolvedLanguagePackCoreLocation":"/Users/liujunren/Library/Application Support/Code/clp/bbca1a7059cee8a1b93da8947fee1c4f.zh-cn/4af164ea3a06f701fe3e89a2bcbb421d2026b68f","_corruptedFile":"/Users/liujunren/Library/Application Support/Code/clp/bbca1a7059cee8a1b93da8947fee1c4f.zh-cn/corrupted.info","_languagePackSupport":true}
 # environment
 _ = /usr/bin/make
 # makefile
@@ -42,7 +42,7 @@ VSCODE_VERBOSE_LOGGING = true
 # environment
 __CFBundleIdentifier = com.microsoft.VSCode
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /var/folders/w4/_42jw82s60b3hpc56kvh_x700000gn/T/vscode-ipc-874b4858-c628-48da-ab57-b88fa4ec805a.sock
+VSCODE_IPC_HOOK_EXTHOST = /var/folders/w4/_42jw82s60b3hpc56kvh_x700000gn/T/vscode-ipc-40464339-36db-410c-8490-b3fd2158d003.sock
 # environment
 VSCODE_CWD = /
 # environment
@@ -54,7 +54,7 @@ LSCOLORS = CxfxcxdxbxegedabagGxGx
 # environment
 GOPATH = /Library/WebServer/Documents/gowork/
 # environment
-LaunchInstanceID = E621EF75-5EE9-4E9D-B6D9-77BFFCC7901E
+LaunchInstanceID = 2CCA664D-42C7-4374-964D-232B981DDE86
 # environment
 VSCODE_LOG_STACK = false
 # environment
@@ -64,7 +64,7 @@ ANDROID_HOME = /Users/liujunren/Library/Android/sdk
 # default
 .FEATURES := target-specific order-only second-expansion else-if archives jobserver check-symlink
 # environment
-SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.OVnMXG8te4/Listeners
+SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.JCV6sQkcDc/Listeners
 # automatic
 %F = $(notdir $%)
 # environment
@@ -80,7 +80,7 @@ HOME = /Users/liujunren
 # default
 MAKEFILEPATH = $(shell /usr/bin/xcode-select -print-path 2>/dev/null || echo /Developer)/Makefiles
 # environment
-VSCODE_CODE_CACHE_PATH = /Users/liujunren/Library/Application Support/Code/CachedData/c3511e6c69bb39013c4a4b7b9566ec1ca73fc4d5
+VSCODE_CODE_CACHE_PATH = /Users/liujunren/Library/Application Support/Code/CachedData/4af164ea3a06f701fe3e89a2bcbb421d2026b68f
 # environment
 LOGNAME = liujunren
 # environment
@@ -122,7 +122,7 @@ TMPDIR = /var/folders/w4/_42jw82s60b3hpc56kvh_x700000gn/T/
 # automatic
 *F = $(notdir $*)
 # environment
-VSCODE_IPC_HOOK = /Users/liujunren/Library/Application Support/Code/1.67.2-main.sock
+VSCODE_IPC_HOOK = /Users/liujunren/Library/Application Support/Code/1.68.0-main.sock
 # makefile
 MAKEFLAGS = Rrqp
 # environment
@@ -130,7 +130,7 @@ MFLAGS = -Rrqp
 # automatic
 *D = $(patsubst %/,%,$(dir $*))
 # environment
-XPC_SERVICE_NAME = application.com.microsoft.VSCode.8652553148.8652553154
+XPC_SERVICE_NAME = application.com.microsoft.VSCode.8653894899.8653894905
 # automatic
 +D = $(patsubst %/,%,$(dir $+))
 # automatic
@@ -164,7 +164,7 @@ LANG = C
 # environment
 JAVA_8_HOME = /Library/Java/JavaVirtualMachines/jdk1.8.0_271.jdk/Contents/Home
 # environment
-VSCODE_PID = 428
+VSCODE_PID = 405
 # variable set hash-table stats:
 # Load=77/1024=8%, Rehash=0, Collisions=3/98=3%
 
@@ -174,9 +174,9 @@ VSCODE_PID = 428
 
 # Directories
 
-# . (device 16777222, inode 8649471513): 18 files, no impossibilities.
+# . (device 16777220, inode 8649471513): 15 files, no impossibilities.
 
-# 18 files, no impossibilities in 1 directories.
+# 15 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -248,7 +248,7 @@ GNUmakefile:
 # strcache size: total = 0 / max = 0 / min = 4096 / avg = 0
 # strcache free: total = 0 / max = 0 / min = 4096 / avg = 0
 
-# Finished Make data base on Thu Jun  9 12:17:37 2022
+# Finished Make data base on Sat Jun 18 21:58:17 2022
 
  
 make: *** No rule to make target `all'.  Stop.

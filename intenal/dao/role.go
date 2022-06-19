@@ -67,8 +67,8 @@ func (Role) Info(req *pb.DefaultPkReq) model.RbacRole {
 }
 
 func (Role) Update(req *pb.RoleUpdateReq) errors.Error {
-	var info model.RbacAdmin
-	first := DB.Where("domian_id=? and id!=? and name=?", req.DomainID, req.ID, req.Name).First(&info)
+	var info model.RbacRole
+	first := DB.Where("domain_id=? and id!=? and name=?", req.DomainID, req.ID, req.Name).First(&info)
 	if first.RowsAffected > 0 {
 		return errors.NewDBDuplication("account")
 	}
