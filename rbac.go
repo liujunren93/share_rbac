@@ -49,7 +49,7 @@ func session(ctx context.Context) string {
 	}
 
 }
-func (r *Rbac) NewApiService(ctx context.Context, group *gin.RouterGroup, auther auth.Auther, cli *client.Client) {
+func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther auth.Auther, cli *client.Client) (unLogin, Login router.RouterGroup, err error) {
 	cli.AddOptions(client.WithCallWrappers(metadata.NewClientWrapper("rbac_session", session)), client.WithCallWrappers(breaker.NewClientWrapper()))
 	cci, err := cli.Client(r.serverName)
 	if err != nil {
@@ -57,7 +57,7 @@ func (r *Rbac) NewApiService(ctx context.Context, group *gin.RouterGroup, auther
 		return
 	}
 	ctrl.InitRbacCtrl(ctx, auther, r.mq, cci)
-	r.initRbacRoute(group, auther)
+	return r.initRbacRoute(auther, engine)
 }
 
 func (r *Rbac) NewGrpcService(DB *gorm.DB, ser *server.GrpcServer) {
@@ -66,12 +66,12 @@ func (r *Rbac) NewGrpcService(DB *gorm.DB, ser *server.GrpcServer) {
 	ser.Run()
 }
 
-func (r *Rbac) initRbacRoute(routerGroup *gin.RouterGroup, auther auth.Auther) (noAuth, auth router.RouterGroup, err error) {
-	session := router.NewRouterGroup(routerGroup)
-
+func (r *Rbac) initRbacRoute(auther auth.Auther, engine *gin.Engine) (unLogin, Login router.RouterGroup, err error) {
+	unLogin = router.NewRouterGroup(engine.Group(""))
 	var rbac = ctrl.RbacCtrl
-	session.Use(middleware.Session(auther), middleware.Rbac)
-	domian := session.Group("domain")
+	unLogin.Use(middleware.Session(auther), middleware.Rbac)
+	rbacRouter := unLogin.Group("rbac")
+	domian := rbacRouter.Group("domain")
 	{
 		domian.GET("", rbac.DomainList)
 		domian.POST("", rbac.DomainCreate)
@@ -80,17 +80,17 @@ func (r *Rbac) initRbacRoute(routerGroup *gin.RouterGroup, auther auth.Auther) (
 		domian.GET("/:id", rbac.DomainInfo)
 	}
 
-	rauth := session.Group("auth").White("rbac")
+	Login = rbacRouter.Group("auth").White("rbac")
 	{
-		rauth.POST("/login", rbac.Login)
-		rauth.POST("/refreshToken", rbac.RefreshToken)
-		rauth.Use(middleware.Auth(auther))
+		Login.POST("/login", rbac.Login)
+		Login.POST("/refreshToken", rbac.RefreshToken)
+		Login.Use(middleware.Auth(auther))
 
-		rauth.GET("/userInfo", rbac.UserInfo)
-		rauth.GET("/permission", rbac.Permission)
-		rauth.GET("/menu", rbac.UserMenu)
+		Login.GET("/userInfo", rbac.UserInfo)
+		Login.GET("/permission", rbac.Permission)
+		Login.GET("/menu", rbac.UserMenu)
 	}
-	loginRouter := session.Group("")
+	loginRouter := rbacRouter.Group("")
 	loginRouter.Use(middleware.Auth(auther))
 
 	admin := loginRouter.Group("admin")
@@ -153,5 +153,5 @@ func (r *Rbac) initRbacRoute(routerGroup *gin.RouterGroup, auther auth.Auther) (
 		path.GET("/:id", rbac.PathInfo)
 	}
 	loginRouter.GET("menu", rbac.UserMenu)
-	return session, loginRouter, nil
+	return
 }
