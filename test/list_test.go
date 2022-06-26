@@ -1,29 +1,15 @@
 package test
 
 import (
-	"context"
 	"fmt"
 	"sync"
 	"testing"
 	"time"
 
 	re "github.com/go-redis/redis/v8"
-	"github.com/liujunren93/share_utils/databases/redis"
 )
 
 var r *re.Client
-
-func init() {
-
-	r = redis.NewRedis(&re.Options{
-		Network: "tcp",
-		Addr:    "node1:6379",
-	})
-
-	if sc := r.Ping(context.Background()); sc.Err() != nil {
-		panic(sc.Err().Error())
-	}
-}
 
 var a []int
 var mu = sync.RWMutex{}

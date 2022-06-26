@@ -32,11 +32,11 @@ import (
 var app *share_rbac.Rbac
 
 func init() {
-
-	app = share_rbac.NewRbac(redis.NewMq(dbredis.NewRedis(&re.Options{
+	r, _ := dbredis.NewRedis(&re.Options{
 		Network: "tcp",
 		Addr:    "node1:6379",
-	})))
+	})
+	app = share_rbac.NewRbac(redis.NewMq(r))
 	log.Logger = logrus.New()
 }
 func InitRbacDB() *gorm.DB {
@@ -56,14 +56,14 @@ func InitRbacDB() *gorm.DB {
 func initServer() {
 	engine := gin.Default()
 	engine.Use(middleware.Cors)
-	group := engine.Group("rbac")
+
 	c := grpc.NewClient(grpc.WithBuildTargetFunc(func(namespace string) string { return "127.0.0.1:19091" }))
 	shareClient, err := c.GetShareClient("test")
 	if err != nil {
 		panic(err)
 	}
 
-	app.NewApiService(context.TODO(), group, jwt.NewAuth(auth.WithExpiry(1000), auth.WithSecret("www.sharelie.com")), shareClient)
+	app.NewApiService(context.TODO(), engine, jwt.NewAuth(auth.WithExpiry(1000), auth.WithSecret("www.sharelie.com")), shareClient)
 	engine.Run(":9091")
 }
 
