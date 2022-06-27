@@ -60,10 +60,10 @@ func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther aut
 	return r.initRbacRoute(auther, engine)
 }
 
-func (r *Rbac) NewGrpcService(DB *gorm.DB, ser *server.GrpcServer) {
+func (r *Rbac) NewGrpcService(DB *gorm.DB, ser *server.GrpcServer) error {
 	dao.InitDB(DB)
 	pb.RegisterRbacServer(ser.Server(), rpc.NewRbacServer(r.mq))
-	ser.Run()
+	return ser.Run()
 }
 
 func (r *Rbac) initRbacRoute(auther auth.Auther, engine *gin.Engine) (unLogin, Login router.RouterGroup, err error) {
