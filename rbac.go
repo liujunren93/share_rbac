@@ -22,7 +22,6 @@ import (
 )
 
 type Rbac struct {
-	serverName string
 	mq         mq.Mqer
 	grpcClient client.Client
 }
@@ -49,9 +48,9 @@ func session(ctx context.Context) string {
 	}
 
 }
-func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther auth.Auther, cli *client.Client) (unLogin, Login router.RouterGroup, err error) {
+func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther auth.Auther, cli *client.Client, serverName string) (unLogin, Login router.RouterGroup, err error) {
 	cli.AddOptions(client.WithCallWrappers(metadata.NewClientWrapper("rbac_session", session)), client.WithCallWrappers(breaker.NewClientWrapper()))
-	cci, err := cli.Client(r.serverName)
+	cci, err := cli.Client(serverName)
 	if err != nil {
 		log.Logger.Error(err)
 		return
