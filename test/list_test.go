@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"net"
 	"sync"
 	"testing"
 	"time"
@@ -15,20 +16,10 @@ var a []int
 var mu = sync.RWMutex{}
 
 func TestList(t *testing.T) {
-	go func() {
-		for i := 0; i < 10; i++ {
-			a = append(a, 1)
-		}
 
-	}()
-	go func() {
-		for i := 0; i < 10; i++ {
-			a = append(a, 2)
-		}
+	conn, err := net.Listen("tcp", "0.0.0.0:0")
+	fmt.Println(conn.Addr(), err)
 
-	}()
-	time.Sleep(time.Second * 1)
-	fmt.Println(a)
 }
 
 func ttt(c <-chan int) {

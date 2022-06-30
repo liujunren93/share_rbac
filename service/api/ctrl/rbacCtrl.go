@@ -428,11 +428,13 @@ func (ctrl *rbacCtrl) Login(ctx *gin.Context) {
 		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
 		return
 	}
+
 	res, err := ctrl.grpcClient.Login(ctx, &req)
 	if err != nil {
 		netHelper.Response(ctx, res, err, nil)
 		return
 	}
+	fmt.Println(res)
 	if res.Code != 200 {
 		netHelper.Response(ctx, res, err, nil)
 		return

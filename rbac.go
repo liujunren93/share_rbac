@@ -16,7 +16,6 @@ import (
 	"github.com/liujunren93/share_utils/common/auth"
 	"github.com/liujunren93/share_utils/common/gin/router"
 	"github.com/liujunren93/share_utils/common/mq"
-	"github.com/liujunren93/share_utils/wrapper/breaker"
 	"github.com/liujunren93/share_utils/wrapper/metadata"
 	"gorm.io/gorm"
 )
@@ -27,6 +26,7 @@ type Rbac struct {
 }
 
 func NewRbac(mq mq.Mqer) *Rbac {
+
 	return &Rbac{mq: mq}
 }
 
@@ -49,7 +49,7 @@ func session(ctx context.Context) string {
 
 }
 func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther auth.Auther, cli *client.Client, serverName string) (unLogin, Login router.RouterGroup, err error) {
-	cli.AddOptions(client.WithCallWrappers(metadata.NewClientWrapper("rbac_session", session)), client.WithCallWrappers(breaker.NewClientWrapper()))
+	cli.AddOptions(client.WithCallWrappers(metadata.NewClientWrapper("rbac_session", session)))
 	cci, err := cli.Client(serverName)
 	if err != nil {
 		log.Logger.Error(err)

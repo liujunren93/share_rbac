@@ -57,13 +57,13 @@ func initServer() {
 	engine := gin.Default()
 	engine.Use(middleware.Cors)
 
-	c := grpc.NewClient(grpc.WithBuildTargetFunc(func(namespace string) string { return "127.0.0.1:19091" }))
-	shareClient, err := c.GetShareClient("test")
+	c := grpc.NewClient(grpc.WithBuildTargetFunc(func(args ...string) string { return "127.0.0.1:19091" }))
+	shareClient, err := c.GetShareClient()
 	if err != nil {
 		panic(err)
 	}
 
-	app.NewApiService(context.TODO(), engine, jwt.NewAuth(auth.WithExpiry(1000), auth.WithSecret("www.sharelie.com")), shareClient)
+	app.NewApiService(context.TODO(), engine, jwt.NewAuth(auth.WithExpiry(1000), auth.WithSecret("www.sharelie.com")), shareClient, "rbac")
 	engine.Run(":9091")
 }
 

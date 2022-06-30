@@ -1,10 +1,12 @@
 package log
 
-import "github.com/sirupsen/logrus"
+import (
+	utilsLog "github.com/liujunren93/share_utils/log"
+)
 
 /**
 * @Author: liujunren
 * @Date: 2022/3/7 15:40
  */
 
-var Logger *logrus.Logger
+var Logger = utilsLog.Logger
