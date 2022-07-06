@@ -48,8 +48,11 @@ func session(ctx context.Context) string {
 	}
 
 }
-func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther auth.Auther, cli *client.Client, serverName string) (unLogin, Login router.RouterGroup, err error) {
+func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther auth.Auther, cli *client.Client, namespace, serverName string) (unLogin, Login router.RouterGroup, err error) {
 	cli.AddOptions(client.WithCallWrappers(metadata.NewClientWrapper("rbac_session", session)))
+	if namespace != "" {
+		cli.AddOptions(client.WithNamespace(namespace))
+	}
 	cci, err := cli.Client(serverName)
 	if err != nil {
 		log.Logger.Error(err)
@@ -60,9 +63,13 @@ func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther aut
 }
 
 func (r *Rbac) NewGrpcService(DB *gorm.DB, ser *server.GrpcServer) error {
-	dao.InitDB(DB)
+	err := dao.InitDB(DB)
+	if err != nil {
+		log.Logger.Error(err)
+		return err
+	}
 	pb.RegisterRbacServer(ser.Server(), rpc.NewRbacServer(r.mq))
-	return ser.Run()
+	return nil
 }
 
 func (r *Rbac) initRbacRoute(auther auth.Auther, engine *gin.Engine) (unLogin, Login router.RouterGroup, err error) {
