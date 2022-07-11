@@ -7,7 +7,7 @@ import (
 	"github.com/liujunren93/share_rbac/intenal/entity"
 	"github.com/liujunren93/share_rbac/intenal/model"
 	"github.com/liujunren93/share_rbac/log"
-	"github.com/liujunren93/share_rbac/pb"
+	pb "github.com/liujunren93/share_rbac/rbac_pb"
 	"github.com/liujunren93/share_utils/common/set"
 	"github.com/liujunren93/share_utils/errors"
 	"github.com/liujunren93/share_utils/helper"

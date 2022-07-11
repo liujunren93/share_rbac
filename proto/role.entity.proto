@@ -1,6 +1,6 @@
 syntax = "proto3";
 package proto;
-option go_package = "../pb;pb";
+option go_package = "../rbac_pb;rbac_pb";
 
 message RoleListReq {
   // @gotags: form:"name"

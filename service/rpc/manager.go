@@ -7,7 +7,7 @@ import (
 
 	"github.com/liujunren93/share_rbac/intenal/dao"
 	"github.com/liujunren93/share_rbac/log"
-	"github.com/liujunren93/share_rbac/pb"
+	pb "github.com/liujunren93/share_rbac/rbac_pb"
 	"github.com/liujunren93/share_utils/netHelper"
 )
 

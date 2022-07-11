@@ -8,7 +8,7 @@ import (
 
 	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
-	"github.com/liujunren93/share_rbac/pb"
+	pb "github.com/liujunren93/share_rbac/rbac_pb"
 	"github.com/liujunren93/share_utils/common/auth"
 	"github.com/liujunren93/share_utils/common/mq"
 	"github.com/liujunren93/share_utils/errors"

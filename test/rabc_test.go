@@ -41,7 +41,7 @@ func init() {
 }
 func InitRbacDB() *gorm.DB {
 	mysql, err := g.NewMysql(&g.Mysql{
-		LogMode:  true,
+		Debug:    true,
 		Host:     "node1",
 		User:     "root",
 		Password: "root",
@@ -63,7 +63,7 @@ func initServer() {
 		panic(err)
 	}
 
-	app.NewApiService(context.TODO(), engine, jwt.NewAuth(auth.WithExpiry(1000), auth.WithSecret("www.sharelie.com")), shareClient, "rbac")
+	app.NewApiService(context.TODO(), engine, jwt.NewAuth(auth.WithExpiry(1000), auth.WithSecret("www.sharelie.com")), shareClient, "", "rbac")
 	engine.Run(":9091")
 }
 

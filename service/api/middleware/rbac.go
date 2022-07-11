@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/liujunren93/share_rbac/pb"
+	pb "github.com/liujunren93/share_rbac/rbac_pb"
 	"github.com/liujunren93/share_rbac/service/api/ctrl"
 	"github.com/liujunren93/share_utils/common/gin/router"
 	"github.com/liujunren93/share_utils/errors"

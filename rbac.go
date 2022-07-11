@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/liujunren93/share_rbac/log"
+	pb "github.com/liujunren93/share_rbac/rbac_pb"
 
 	"github.com/gin-gonic/gin"
 	"github.com/liujunren93/share/client"
 	"github.com/liujunren93/share/server"
 	"github.com/liujunren93/share_rbac/intenal/dao"
-	"github.com/liujunren93/share_rbac/pb"
 	"github.com/liujunren93/share_rbac/service/api/ctrl"
 	"github.com/liujunren93/share_rbac/service/api/middleware"
 	"github.com/liujunren93/share_rbac/service/rpc"
@@ -48,7 +48,7 @@ func session(ctx context.Context) string {
 	}
 
 }
-func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther auth.Auther, cli *client.Client, namespace, serverName string) (unLogin, Login router.RouterGroup, err error) {
+func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther auth.Auther, cli *client.Client, namespace, serverName string) (unLogin, Login router.Router, err error) {
 	cli.AddOptions(client.WithCallWrappers(metadata.NewClientWrapper("rbac_session", session)))
 	if namespace != "" {
 		cli.AddOptions(client.WithNamespace(namespace))
@@ -72,8 +72,8 @@ func (r *Rbac) NewGrpcService(DB *gorm.DB, ser *server.GrpcServer) error {
 	return nil
 }
 
-func (r *Rbac) initRbacRoute(auther auth.Auther, engine *gin.Engine) (unLogin, Login router.RouterGroup, err error) {
-	unLogin = router.NewRouterGroup(engine.Group(""))
+func (r *Rbac) initRbacRoute(auther auth.Auther, engine *gin.Engine) (unLogin, Login router.Router, err error) {
+	unLogin = router.NewRouter(engine)
 	var rbac = ctrl.RbacCtrl
 	unLogin.Use(middleware.Session(auther), middleware.Rbac)
 	rbacRouter := unLogin.Group("rbac")
