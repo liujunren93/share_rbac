@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package proto;
+package rbacProto;
 option go_package = "../rbac_pb;rbac_pb";
 import "base.proto";
 import "admin.entity.proto";

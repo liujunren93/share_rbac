@@ -75,7 +75,7 @@ func (r *Rbac) NewGrpcService(DB *gorm.DB, ser *server.GrpcServer) error {
 func (r *Rbac) initRbacRoute(auther auth.Auther, engine *gin.Engine) (unLogin, Login router.Router, err error) {
 	unLogin = router.NewRouter(engine)
 	var rbac = ctrl.RbacCtrl
-	unLogin.Use(middleware.Session(auther), middleware.Rbac)
+	unLogin.Use(middleware.Session(auther))
 	rbacRouter := unLogin.Group("rbac")
 	domian := rbacRouter.Group("domain")
 	{
