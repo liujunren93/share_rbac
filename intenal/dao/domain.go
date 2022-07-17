@@ -29,7 +29,9 @@ func (Domain) List(req *pb.DomainListReq) entity.DomainListRes {
 		db = db.Where("status = ?", req.Domain)
 	}
 	db.Model(&model.RbacDomain{}).Count(&res.Total)
-
+	if req.SortField != "" {
+		db = db.Order(req.SortField + " " + req.SortOrder)
+	}
 	db.Limit(pageSize(req.PageSize)).Offset(offset(req.PageSize, req.Page)).Find(&res.List)
 	return res
 }

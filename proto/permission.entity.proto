@@ -13,6 +13,10 @@ message PermissionListReq {
   int64 DomainID=4;
    // @gotags: form:"status" 
   int64 Status=5;
+    // @gotags: form:"sort_field"
+    string SortField=6;
+  // @gotags: form:"sort_order" binding:"oneof='' asc desc,required_with=SortField"
+  string SortOrder=7;
 
 }
 

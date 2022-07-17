@@ -40,6 +40,9 @@ func (dao Path) List(req *pb.PathListReq) entity.PathListRes {
 		res.Total = dao.count(db)
 		db = db.Limit(pageSize(req.PageSize)).Offset(offset(req.PageSize, req.Page))
 	}
+	if req.SortField != "" {
+		db = db.Order(req.SortField + " " + req.SortOrder)
+	}
 
 	res.List = dao.list(db, nil)
 
@@ -97,7 +100,7 @@ func (Path) Create(req *pb.PathCreateReq) (uint, errors.Error) {
 		marshal, err := json.Marshal(req.Meta)
 		if err != nil {
 			log.Logger.Error(err)
-			return 0, errors.InternalErrorMsg(err)
+			return 0, errors.NewInternalError(err)
 		}
 		path.Meta = string(marshal)
 	}
@@ -221,7 +224,8 @@ func (dao Path) getPathByPIDs(pathType int8, permissionIDs ...uint) []model.Rbac
 	for _, v := range list {
 		uintSet.Add(v.PathID)
 	}
-	db := DB.Where("path_type=?", pathType)
+	db := DB.Where("path_type=?", pathType).Order("sort asc").Debug()
+
 	return dao.list(db, nil, uintSet.List()...)
 
 }

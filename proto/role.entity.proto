@@ -11,6 +11,12 @@ message RoleListReq {
   int64  Page = 3;
   // @gotags: form:"domain_id" 
   int64 DomainID=4;
+    // @gotags: form:"sort_id"
+    int64 SortID=5;
+    // @gotags: form:"sort_field"
+    string SortField=6;
+  // @gotags: form:"sort_order" binding:"oneof='' asc desc,required_with=SortField"
+  string SortOrder=7;
 }
 message RoleCreateReq{
   // @gotags: json:"name" binding:"required"

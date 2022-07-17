@@ -44,6 +44,10 @@ message AdminListReq {
   int64 Status=5;
   // @gotags: form:"account"
   string Account=6;
+    // @gotags: form:"sort_field"
+    string SortField=7;
+  // @gotags: form:"sort_order" binding:"oneof='' asc desc,required_with=SortField"
+  string SortOrder=8;
 }
 
 message AdminDelReq {

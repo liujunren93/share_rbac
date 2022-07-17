@@ -55,6 +55,10 @@ func InitRbacCtrl(ctx context.Context, Auther auth.Auther, mq mq.Mqer, grpcClien
 
 }
 
+func UpdateAuther(auther auth.Auther) {
+	RbacCtrl.Auther = auther
+}
+
 func (ctrl *rbacCtrl) DomainList(ctx *gin.Context) {
 	var req pb.DomainListReq
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -434,7 +438,7 @@ func (ctrl *rbacCtrl) Login(ctx *gin.Context) {
 		netHelper.Response(ctx, res, err, nil)
 		return
 	}
-	fmt.Println(res)
+
 	if res.Code != 200 {
 		netHelper.Response(ctx, res, err, nil)
 		return
@@ -442,6 +446,8 @@ func (ctrl *rbacCtrl) Login(ctx *gin.Context) {
 	ctrl.Auther.SetData(UID, res.Data.UID)
 	ctrl.Auther.SetData(DOMIAN_ID, req.DomainID)
 	ctrl.Auther.SetData(ROLES, res.Data.RoleIDs)
+	fmt.Println("token")
+	fmt.Println(ctrl.Auther)
 	t, err := ctrl.Auther.Token("")
 	netHelper.Response(ctx, nil, err, map[string]interface{}{"token": t, "user_info": res.Data})
 
@@ -459,7 +465,7 @@ func (ctrl *rbacCtrl) RefreshToken(ctx *gin.Context) {
 	}
 	ntoken, err := ctrl.Auther.Token(req.RefreshToken)
 	if err != nil {
-		netHelper.Response(ctx, errors.NewUnauthorized(""), err, nil)
+		netHelper.Response(ctx, errors.NewPublic(errors.StatusRefreshTokenTimeout, "登录信息已过期"), err, nil)
 		return
 	}
 	netHelper.Response(ctx, nil, err, map[string]interface{}{"token": ntoken})

@@ -26,6 +26,9 @@ func (r Role) List(req *pb.RoleListReq) (res entity.RoleListRes) {
 		db = db.Where("name like ?", "%"+req.Name+"%")
 	}
 	db.Model(&model.RbacRole{}).Count(&res.Total)
+	if req.SortField != "" {
+		db = db.Order(req.SortField + " " + req.SortOrder)
+	}
 	db = db.Limit(int(req.PageSize)).Offset(int(req.Page * req.PageSize)).Find(&res.List)
 	return
 }

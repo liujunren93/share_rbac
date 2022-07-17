@@ -32,7 +32,11 @@ func (Admin) List(req *pb.AdminListReq) (res entity.AdminListRes) {
 	if req.Status != 0 {
 		db = db.Where("status = ?", req.Status)
 	}
+
 	db.Model(&model.RbacAdmin{}).Count(&res.Total)
+	if req.SortField != "" {
+		db = db.Order(req.SortField + " " + req.SortOrder)
+	}
 	db.Limit(pageSize(req.PageSize)).Offset(offset(req.PageSize, req.Page)).Find(&res.List)
 	return
 }
@@ -45,7 +49,7 @@ func (Admin) Create(req *pb.AdminCreateReq) errors.Error {
 	password, err := helper.NewPassword(req.Account, req.Password, 10)
 	if err != nil {
 		log.Logger.Error(err)
-		return errors.InternalErrorMsg(err)
+		return errors.NewInternalError(err)
 	}
 	err = DB.Create(&model.RbacAdmin{
 		DomainID: uint(req.DomainID),
@@ -81,7 +85,7 @@ func (Admin) Update(req *pb.AdminUpdateReq) errors.Error {
 		password, err := helper.NewPassword(info.Account, req.Password, 10)
 		if err != nil {
 			log.Logger.Error(err)
-			return errors.InternalErrorMsg(err)
+			return errors.NewInternalError(err)
 		}
 		req.Password = password
 	}

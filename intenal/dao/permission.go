@@ -33,8 +33,11 @@ func (dao Permission) List(req *pb.PermissionListReq) entity.PermissionListRes {
 	if req.Status != 0 {
 		db = db.Where("status = ?", req.Status)
 	}
-	res.List = dao.list(db, req.PageSize, req.Page)
 	res.Total = dao.count(db)
+	if req.SortField != "" {
+		db = db.Order(req.SortField + " " + req.SortOrder)
+	}
+	res.List = dao.list(db, req.PageSize, req.Page)
 
 	return res
 }

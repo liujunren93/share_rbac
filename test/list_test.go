@@ -2,32 +2,37 @@ package test
 
 import (
 	"fmt"
-	"net"
-	"sync"
+	"os"
+	"os/signal"
+	"syscall"
 	"testing"
 	"time"
-
-	re "github.com/go-redis/redis/v8"
 )
 
-var r *re.Client
 
-var a []int
-var mu = sync.RWMutex{}
+
+
 
 func TestList(t *testing.T) {
-
-	conn, err := net.Listen("tcp", "0.0.0.0:0")
-	fmt.Println(conn.Addr(), err)
-
-}
-
-func ttt(c <-chan int) {
-	for {
-		select {
-		case m := <-c:
-			fmt.Println(111, m)
-		}
-		time.Sleep(time.Second)
+	fmt.Println("start")
+	ch := make(chan os.Signal, 100)
+	sign := []os.Signal{
+		syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT,
 	}
+	signal.Notify(ch, sign...)
+
+	for c := range ch {
+		switch c {
+		case syscall.SIGTERM:
+			fmt.Println("SIGTERM")
+		case syscall.SIGINT:
+			fmt.Println("SIGINT")
+		case syscall.SIGQUIT:
+			fmt.Println("SIGQUIT")
+		case syscall.SIGKILL:
+			fmt.Println("SIGKILL")
+		}
+		fmt.Println("3333", c)
+	}
+	time.Sleep(time.Second * 10)
 }

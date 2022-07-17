@@ -20,6 +20,7 @@ type RbacPath struct {
 	ApiPath   string `gorm:"api_path;type:varchar(100);not null;default:'';comment:'api:api_path'" json:"api_path"`
 	Status    uint   `gorm:"status;type:int;not null;default:1;comment:'1:启用,2:禁用'" json:"status,omitempty"`
 	DomainID  int    `gorm:"domain_id;index;type:int;not null;default:-1;comment:'-1:公共'" json:"-"`
+	Sort      int    `gorm:"sort;type:int;not null;default:9999" json:"sort"`
 }
 
 type RbacPermission struct {

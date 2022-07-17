@@ -11,17 +11,16 @@ import (
 
 const ISLOGIN = "is_login"
 
+var thisAuth auth.Auther
+
+func UpdateAuther(Auth auth.Auther) {
+	thisAuth = Auth
+
+}
 func Session(auther auth.Auther) func(*gin.Context) {
 	return func(ctx *gin.Context) {
-		// fmt.Printf(ctx.Request.RequestURI)
-		// if ctx.Request.RequestURI != "/rbac/auth/login" && ctx.Request.RequestURI != "/rbac/auth/refreshToken" {
-		// 	ctx.JSON(200, map[string]interface{}{"code": 4001})
-		// 	ctx.Abort()
-		// 	return
-		// }
-
 		token := ctx.Request.Header.Get("Authorization")
-		authData, tp, err := auther.Inspect(token)
+		authData, tp, err := thisAuth.Inspect(token)
 		if err != nil || tp != 1 {
 			ctx.Next()
 			return

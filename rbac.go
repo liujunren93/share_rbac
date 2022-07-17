@@ -2,6 +2,7 @@ package share_rbac
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/liujunren93/share_rbac/log"
 	pb "github.com/liujunren93/share_rbac/rbac_pb"
@@ -16,20 +17,29 @@ import (
 	"github.com/liujunren93/share_utils/common/auth"
 	"github.com/liujunren93/share_utils/common/gin/router"
 	"github.com/liujunren93/share_utils/common/mq"
+	utmiddleware "github.com/liujunren93/share_utils/middleware"
 	"github.com/liujunren93/share_utils/wrapper/metadata"
 	"gorm.io/gorm"
 )
 
 type Rbac struct {
 	mq         mq.Mqer
+	auther     auth.Auther
 	grpcClient client.Client
 }
 
-func NewRbac(mq mq.Mqer) *Rbac {
+func NewRbac(mq mq.Mqer, auther auth.Auther) *Rbac {
 
-	return &Rbac{mq: mq}
+	return &Rbac{mq: mq, auther: auther}
 }
 
+func (r *Rbac) UpAuther(auther auth.Auther) {
+	fmt.Println("share_rbac:UpAuther")
+	r.auther = auther
+	ctrl.UpdateAuther(r.auther)
+
+	middleware.UpdateAuther(auther)
+}
 func session(ctx context.Context) string {
 	if ctx, ok := ctx.(*gin.Context); ok {
 		domainId := ctx.GetInt64(pb.SESSION_DOMAIN_ID.String())
@@ -48,7 +58,7 @@ func session(ctx context.Context) string {
 	}
 
 }
-func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther auth.Auther, cli *client.Client, namespace, serverName string) (unLogin, Login router.Router, err error) {
+func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, cli *client.Client, namespace, serverName string) (unLogin, Login router.Router, err error) {
 	cli.AddOptions(client.WithCallWrappers(metadata.NewClientWrapper("rbac_session", session)))
 	if namespace != "" {
 		cli.AddOptions(client.WithNamespace(namespace))
@@ -58,8 +68,8 @@ func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther aut
 		log.Logger.Error(err)
 		return
 	}
-	ctrl.InitRbacCtrl(ctx, auther, r.mq, cci)
-	return r.initRbacRoute(auther, engine)
+	ctrl.InitRbacCtrl(ctx, r.auther, r.mq, cci)
+	return r.initRbacRoute(engine)
 }
 
 func (r *Rbac) NewGrpcService(DB *gorm.DB, ser *server.GrpcServer) error {
@@ -72,32 +82,27 @@ func (r *Rbac) NewGrpcService(DB *gorm.DB, ser *server.GrpcServer) error {
 	return nil
 }
 
-func (r *Rbac) initRbacRoute(auther auth.Auther, engine *gin.Engine) (unLogin, Login router.Router, err error) {
+func (r *Rbac) initRbacRoute(engine *gin.Engine) (unLogin, login router.Router, err error) {
 	unLogin = router.NewRouter(engine)
 	var rbac = ctrl.RbacCtrl
-	unLogin.Use(middleware.Session(auther))
+	unLogin.Use(utmiddleware.Cors, middleware.Session(r.auther))
+	login = unLogin.Group("")
+	login.Use(middleware.Auth, middleware.Rbac)
 	rbacRouter := unLogin.Group("rbac")
-	domian := rbacRouter.Group("domain")
-	{
-		domian.GET("", rbac.DomainList)
-		domian.POST("", rbac.DomainCreate)
-		domian.PUT("/:id", rbac.DomainUpdate)
-		domian.DELETE("/:id", rbac.DomainDel)
-		domian.GET("/:id", rbac.DomainInfo)
-	}
+	rbacRouter.Use(middleware.Rbac)
 
-	Login = rbacRouter.Group("auth").White("rbac")
+	auth := rbacRouter.Group("auth").White("rbac")
 	{
-		Login.POST("/login", rbac.Login)
-		Login.POST("/refreshToken", rbac.RefreshToken)
-		Login.Use(middleware.Auth(auther))
+		auth.POST("/login", rbac.Login)
+		auth.POST("/refreshToken", rbac.RefreshToken)
+		auth.Use(middleware.Auth)
 
-		Login.GET("/userInfo", rbac.UserInfo)
-		Login.GET("/permission", rbac.Permission)
-		Login.GET("/menu", rbac.UserMenu)
+		auth.GET("/userInfo", rbac.UserInfo)
+		auth.GET("/permission", rbac.Permission)
+		auth.GET("/menu", rbac.UserMenu)
 	}
 	loginRouter := rbacRouter.Group("")
-	loginRouter.Use(middleware.Auth(auther))
+	loginRouter.Use(middleware.Auth)
 
 	admin := loginRouter.Group("admin")
 	{
@@ -109,7 +114,15 @@ func (r *Rbac) initRbacRoute(auther auth.Auther, engine *gin.Engine) (unLogin, L
 	}
 
 	loginRouter.GET("adminPermission", rbac.UserPermission)
+	domian := loginRouter.Group("domain")
 
+	{
+		domian.GET("", rbac.DomainList)
+		domian.POST("", rbac.DomainCreate)
+		domian.PUT("/:id", rbac.DomainUpdate)
+		domian.DELETE("/:id", rbac.DomainDel)
+		domian.GET("/:id", rbac.DomainInfo)
+	}
 	adminRole := loginRouter.Group("adminRole")
 	{
 		adminRole.GET("/:id", rbac.AdminRoleList)
