@@ -10,12 +10,13 @@ import (
 )
 
 func Rbac(ctx *gin.Context) {
-	if !ctx.GetBool(ISLOGIN) {
+	if router.InWhitelist(ctx, "rbac") {
 		ctx.Next()
 		return
 	}
-	if router.InWhitelist(ctx, "rbac") {
-		ctx.Next()
+	if !ctx.GetBool(ISLOGIN) {
+		netHelper.Response(ctx, errors.NewPublic(errors.StatusTokenTimeout, "登录信息已过期"), nil, nil)
+		ctx.Abort()
 		return
 	}
 
