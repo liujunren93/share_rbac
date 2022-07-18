@@ -28,9 +28,9 @@ type Rbac struct {
 	grpcClient client.Client
 }
 
-func NewRbac(mq mq.Mqer, auther auth.Auther) *Rbac {
+func NewRbac(mq mq.Mqer) *Rbac {
 
-	return &Rbac{mq: mq, auther: auther}
+	return &Rbac{mq: mq}
 }
 
 func (r *Rbac) UpAuther(auther auth.Auther) {
@@ -58,7 +58,8 @@ func session(ctx context.Context) string {
 	}
 
 }
-func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, cli *client.Client, namespace, serverName string) (unLogin, Login router.Router, err error) {
+func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther auth.Auther, cli *client.Client, namespace, serverName string) (unLogin, Login router.Router, err error) {
+	r.auther = auther
 	cli.AddOptions(client.WithCallWrappers(metadata.NewClientWrapper("rbac_session", session)))
 	if namespace != "" {
 		cli.AddOptions(client.WithNamespace(namespace))
@@ -69,6 +70,7 @@ func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, cli *clien
 		return
 	}
 	ctrl.InitRbacCtrl(ctx, r.auther, r.mq, cci)
+	middleware.UpdateAuther(r.auther)
 	return r.initRbacRoute(engine)
 }
 
@@ -85,7 +87,8 @@ func (r *Rbac) NewGrpcService(DB *gorm.DB, ser *server.GrpcServer) error {
 func (r *Rbac) initRbacRoute(engine *gin.Engine) (unLogin, login router.Router, err error) {
 	unLogin = router.NewRouter(engine)
 	var rbac = ctrl.RbacCtrl
-	unLogin.Use(utmiddleware.Cors, middleware.Session(r.auther))
+
+	unLogin.Use(utmiddleware.Cors, middleware.Session)
 	login = unLogin.Group("")
 	login.Use(middleware.Auth, middleware.Rbac)
 	rbacRouter := unLogin.Group("rbac")
