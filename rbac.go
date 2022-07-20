@@ -29,12 +29,11 @@ type Rbac struct {
 }
 
 func NewRbac(mq mq.Mqer) *Rbac {
-
 	return &Rbac{mq: mq}
 }
 
 func (r *Rbac) UpAuther(auther auth.Auther) {
-	fmt.Println("share_rbac:UpAuther")
+	log.Logger.Debug("UpAuther", auther)
 	r.auther = auther
 	ctrl.UpdateAuther(r.auther)
 
@@ -59,6 +58,8 @@ func session(ctx context.Context) string {
 
 }
 func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther auth.Auther, cli *client.Client, namespace, serverName string) (unLogin, Login router.Router, err error) {
+	fmt.Println("NewApiService")
+	log.Logger.Debug("NewApiService")
 	r.auther = auther
 	cli.AddOptions(client.WithCallWrappers(metadata.NewClientWrapper("rbac_session", session)))
 	if namespace != "" {
@@ -85,6 +86,7 @@ func (r *Rbac) NewGrpcService(DB *gorm.DB, ser *server.GrpcServer) error {
 }
 
 func (r *Rbac) initRbacRoute(engine *gin.Engine) (unLogin, login router.Router, err error) {
+
 	unLogin = router.NewRouter(engine)
 	var rbac = ctrl.RbacCtrl
 

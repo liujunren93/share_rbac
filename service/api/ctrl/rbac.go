@@ -14,6 +14,7 @@ import (
 	"github.com/liujunren93/share_rbac/log"
 	pb "github.com/liujunren93/share_rbac/rbac_pb"
 	"github.com/liujunren93/share_utils/common/storage/lru"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -83,6 +84,7 @@ func (ctrl *rbacCtrl) domainPolicy(ctx context.Context, domainId int64) error {
 			log.Logger.Error("domainPolicy.Unmarshal", err)
 			return err
 		}
+		fmt.Println(data)
 		prolicy = make([][]string, 0, len(data))
 		for _, v := range data {
 			// //p, admin, domain1, data1, read
@@ -103,6 +105,7 @@ func (ctrl *rbacCtrl) domainPolicy(ctx context.Context, domainId int64) error {
 func (ctrl *rbacCtrl) userPolicy(uid, domainId int64, roleIds []int64) error {
 
 	key := fmt.Sprintf("g_%d_%d", domainId, uid)
+	fmt.Println(key)
 	if _, ok := ctrl.prolicyMap.Load(key); !ok {
 		var prolicy = make([][]string, 0, len(roleIds))
 		for _, v := range roleIds {
@@ -151,10 +154,12 @@ func (ctrl *rbacCtrl) monitorRabc(ctx context.Context) {
 		fmt.Println(111)
 		select {
 		case msg := <-ch:
-			fmt.Println("monitorRabc delete")
+			fmt.Println("monitorRabc msg", msg)
 			if msg.Topic == REDISKEY_MQ_DOMAIN_PERSMISSION {
 				domainId := msg.Data.(string)
+				// 删除p策略
 				ctrl.prolicyMap.Delete(fmt.Sprintf("p_%s", domainId))
+				//删除g
 				prefix := fmt.Sprintf("g_%s", domainId)
 				ctrl.prolicyMap.Range(func(key, value any) bool {
 					if strings.Index(key.(string), prefix) >= 0 {
@@ -162,6 +167,19 @@ func (ctrl *rbacCtrl) monitorRabc(ctx context.Context) {
 					}
 					return true
 				})
+				if log.Logger.Level == logrus.DebugLevel {
+					domains, err := ctrl.syncedEnforcer.GetAllDomains()
+					log.Logger.Debug("monitorRabc", domainId, domains, err)
+				}
+
+				if _, err := ctrl.syncedEnforcer.DeleteDomains(domainId); err != nil {
+					log.Logger.Error("[share_rbac]monitorRabc.DeleteDomains", err)
+				}
+				if log.Logger.Level == logrus.DebugLevel {
+					domains, err := ctrl.syncedEnforcer.GetAllDomains()
+
+					log.Logger.Debug("monitorRabc", domainId, domains, err)
+				}
 				ctrl.prolicyMap.Range(func(key, value any) bool {
 					fmt.Println(key, value)
 					return true
