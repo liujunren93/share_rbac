@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	pb "github.com/liujunren93/share_rbac/rbac_pb"
 	"github.com/liujunren93/share_utils/common/auth"
+	"github.com/liujunren93/share_utils/common/metadata"
 	"github.com/liujunren93/share_utils/common/mq"
 	"github.com/liujunren93/share_utils/errors"
 	"github.com/liujunren93/share_utils/netHelper"
@@ -31,9 +32,9 @@ type rbacCtrl struct {
 }
 
 var (
-	DOMIAN_ID = pb.SESSION_DOMAIN_ID.String() //int64
-	UID       = pb.SESSION_UID.String()
-	ROLES     = pb.SESSION_ROLE_IDS.String() //[]int64
+	DOMIAN_ID = pb.SESSION_SHARE_RBAC_DOMAIN_ID.String() //int64
+	UID       = pb.SESSION_SHARE_RBAC_UID.String()
+	ROLES     = pb.SESSION_SHARE_RBAC_ROLE_IDS.String() //[]int64
 )
 
 var (
@@ -155,6 +156,7 @@ func (ctrl *rbacCtrl) AdminDel(ctx *gin.Context) {
 	var req pb.DefaultPkReq
 	atoi, _ := strconv.Atoi(ctx.Param("id"))
 	req.Pk = &pb.DefaultPkReq_ID{ID: int64(atoi)}
+	req.DomainID = ctx.GetInt64(DOMIAN_ID)
 	update, err := ctrl.grpcClient.MAdminDel(ctx, &req)
 	netHelper.Response(ctx, update, err, nil)
 }
@@ -163,7 +165,7 @@ func (ctrl *rbacCtrl) AdminInfo(ctx *gin.Context) {
 	var req pb.DefaultPkReq
 	atoi, _ := strconv.Atoi(ctx.Param("id"))
 	req.Pk = &pb.DefaultPkReq_ID{ID: int64(atoi)}
-
+	req.DomainID = ctx.GetInt64(DOMIAN_ID)
 	update, err := ctrl.grpcClient.MAdminInfo(ctx, &req)
 	netHelper.Response(ctx, update, err, nil)
 }
@@ -432,8 +434,9 @@ func (ctrl *rbacCtrl) Login(ctx *gin.Context) {
 		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
 		return
 	}
-
-	res, err := ctrl.grpcClient.Login(ctx, &req)
+	var c context.Context
+	c, _ = metadata.SetVal(ctx, "111", "22")
+	res, err := ctrl.grpcClient.Login(c, &req)
 	if err != nil {
 		netHelper.Response(ctx, res, err, nil)
 		return
@@ -444,10 +447,9 @@ func (ctrl *rbacCtrl) Login(ctx *gin.Context) {
 		return
 	}
 	ctrl.Auther.SetData(UID, res.Data.UID)
-	ctrl.Auther.SetData(DOMIAN_ID, req.DomainID)
+	ctrl.Auther.SetData(DOMIAN_ID, res.Data.DomainID)
 	ctrl.Auther.SetData(ROLES, res.Data.RoleIDs)
-	fmt.Println("token")
-	fmt.Println(ctrl.Auther)
+
 	t, err := ctrl.Auther.Token("")
 	netHelper.Response(ctx, nil, err, map[string]interface{}{"token": t, "user_info": res.Data})
 

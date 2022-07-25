@@ -45,5 +45,6 @@ func Session(ctx *gin.Context) {
 			}
 		}
 	}
+
 	ctx.Next()
 }

@@ -114,7 +114,7 @@ func (r *Rbac) MRoleUpdate(ctx context.Context, req *pb.RoleUpdateReq) (*pb.Defa
 }
 
 func (r *Rbac) MRoleDel(ctx context.Context, req *pb.DefaultPkReq) (*pb.DefaultRes, error) {
-	err := dao.Role{}.Del(req.Pk.(*pb.DefaultPkReq_ID).ID)
+	err := dao.Role{}.Del(req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID)
 	var res pb.DefaultRes
 	r.Publish(ctx, REDISKEY_MQ_DOMAIN_PERSMISSION, req.DomainID)
 	return &res, netHelper.RpcResponse(&res, err, nil)

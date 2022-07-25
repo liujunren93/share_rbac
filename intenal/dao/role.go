@@ -57,6 +57,7 @@ func (Role) Create(req *pb.RoleCreateReq) errors.Error {
 		Desc:     req.Desc,
 	}).Error
 	if err != nil {
+		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
 	return nil
@@ -79,14 +80,21 @@ func (Role) Update(req *pb.RoleUpdateReq) errors.Error {
 	delete(snake, "id")
 	err := DB.Where("id=? and domain_id=?", req.ID, req.DomainID).Model(&model.RbacRole{}).Updates(snake).Error
 	if err != nil {
+		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
 	return nil
 }
-func (Role) Del(id int64) errors.Error {
+func (Role) Del(id, domainId int64) errors.Error {
 
-	err := DB.Where("id=?", id).Delete(&model.RbacRole{}).Error
+	err := DB.Where("id=? and domain_id=?", id, domainId).Delete(&model.RbacRole{}).Error
 	if err != nil {
+		log.Logger.Error(err)
+		return errors.NewDBInternal(err)
+	}
+	err = DB.Where("role_id=? and domain_id=?", id, domainId).Delete(&model.RbacRoleUser{}).Error
+	if err != nil {
+		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
 	return nil

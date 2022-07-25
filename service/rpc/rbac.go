@@ -34,9 +34,14 @@ func (r *Rbac) RolePermission(_ context.Context, req *pb.RolePermissionReq) (*pb
 	return &res, netHelper.RpcResponseString(&res, nil, rp)
 }
 
-func (r *Rbac) AdminInfo(_ context.Context, req *pb.DefaultPkReq) (*pb.LoginRes, error) {
-	info := dao.Admin{}.AdminInfo(req)
+func (r *Rbac) AdminInfo(ctx context.Context, req *pb.DefaultPkReq) (*pb.LoginRes, error) {
 	var res pb.LoginRes
+	// err := metadata.GetValUnmarshal(ctx, pb.SESSION_SHARE_RBAC_METADATA_KEY.String(), &session)
+	// if err != nil {
+	// 	log.Logger.Error(err)
+	// 	return &res, netHelper.RpcResponse(&res, errors.New(errors.StatusMetadataNotFound, err), nil)
+	// }
+	info := dao.Admin{}.AdminInfo(req)
 	return &res, netHelper.RpcResponse(&res, nil, info)
 }
 

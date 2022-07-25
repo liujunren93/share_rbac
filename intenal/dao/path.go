@@ -135,6 +135,7 @@ func (Path) Update(req *pb.PathUpdateReq) errors.Error {
 
 	err := DB.Where("id=? ", req.ID).Model(&model.RbacPath{}).Updates(snake).Error
 	if err != nil {
+		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
 	return nil
@@ -142,16 +143,26 @@ func (Path) Update(req *pb.PathUpdateReq) errors.Error {
 func (Path) Del(req *pb.DefaultPkReq) errors.Error {
 	err := DB.Where("id=?", req.Pk.(*pb.DefaultPkReq_ID).ID).Delete(&model.RbacPath{}).Error
 	if err != nil {
+		log.Logger.Error(err)
+		return errors.NewDBInternal(err)
+	}
+	return Permission{}.pathDel(uint(req.Pk.(*pb.DefaultPkReq_ID).ID))
+}
+
+func (Path) DelByids(ids []uint) errors.Error {
+	err := DB.Where("id in ?", ids).Delete(&model.RbacPath{}).Error
+	if err != nil {
+		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
 	return nil
 }
 
-func (Path) getPermissionByIDs(roleIDs ...uint) {
-	var list []model.RbacPermissionPath
-	DB.Where("role_id=?", roleIDs).Find(&list)
+// func (Path) getPermissionByIDs(roleIDs ...uint) {
+// 	var list []model.RbacPermissionPath
+// 	DB.Where("role_id=?", roleIDs).Find(&list)
 
-}
+// }
 
 //GetPathByUid 获取用户path
 func (dao Path) GetRolePath(pathType int8, roleIDs []int64) []model.RbacPath {

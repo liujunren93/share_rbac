@@ -6,9 +6,10 @@ option go_package = "../rbac_pb;rbac_pb";
 
 
 enum SESSION{
-  UID  =0;
-  DOMAIN_ID =1;
-  ROLE_IDS=2;
+  SHARE_RBAC_UID  =0;
+  SHARE_RBAC_DOMAIN_ID =1;
+  SHARE_RBAC_ROLE_IDS=2;
+  SHARE_RBAC_METADATA_KEY=3;
 }
 message DefaultRes {
   // @inject_tag: json:"code"

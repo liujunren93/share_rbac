@@ -63,8 +63,6 @@ message LoginReq{
   string Account = 1;
   // @gotags: json:"password" binding:"required"
   string Password = 2;
-    // @gotags: json:"domain_id" binding:"required"
-  int64 DomainID=4;
 }
 
 message LoginRes{
@@ -81,6 +79,8 @@ message LoginResData{
   int64 UID=1;
   // @gotags: json:"name"
   string Name=2;
+ // @gotags: json:"domain_id" binding:"required"
+ int64 DomainID=4;
    // @gotags: json:"role_ids"
  repeated int64  RoleIDs=3;
 }

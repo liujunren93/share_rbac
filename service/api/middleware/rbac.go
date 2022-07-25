@@ -20,10 +20,10 @@ func Rbac(ctx *gin.Context) {
 		return
 	}
 
-	uid := ctx.GetInt64(pb.SESSION_UID.String())
-	domainId := ctx.GetInt64(pb.SESSION_DOMAIN_ID.String())
+	uid := ctx.GetInt64(pb.SESSION_SHARE_RBAC_UID.String())
+	domainId := ctx.GetInt64(pb.SESSION_SHARE_RBAC_DOMAIN_ID.String())
 	var roleIds []int64
-	if v, ok := ctx.Get(pb.SESSION_ROLE_IDS.String()); ok {
+	if v, ok := ctx.Get(pb.SESSION_SHARE_RBAC_ROLE_IDS.String()); ok {
 		roleIds = v.([]int64)
 	}
 	err := ctrl.RbacCtrl.CheckPermission(ctx, ctx.Request.URL.Path, ctx.Request.Method, roleIds, uid, domainId)

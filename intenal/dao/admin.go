@@ -59,6 +59,7 @@ func (Admin) Create(req *pb.AdminCreateReq) errors.Error {
 		Status:   uint(req.Status),
 	}).Error
 	if err != nil {
+		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
 	return nil
@@ -100,15 +101,16 @@ func (Admin) Update(req *pb.AdminUpdateReq) errors.Error {
 	return nil
 }
 func (Admin) Login(req *pb.LoginReq) (*pb.LoginResData, errors.Error) {
-	domainInfo := Domain{}.info(req.DomainID)
-	if domainInfo.Status != 1 {
-		return nil, errors.New(errors.StatusDomainDisable, "域不存在或被禁用")
-	}
+
 	var info model.RbacAdmin
 	var res pb.LoginResData
-	first := DB.Where(" domain_id=? and account=? and status=1", req.DomainID, req.Account).First(&info)
+	first := DB.Where(" account=?", req.Account).First(&info)
 	if first.RowsAffected == 0 {
 		return &res, errors.NewUnauthorized("")
+	}
+	domainInfo := Domain{}.info(int64(info.DomainID))
+	if domainInfo.Status != 1 {
+		return nil, errors.New(errors.StatusDomainDisable, "域不存在或被禁用")
 	}
 	err := helper.CheckPassword(info.Account, info.Password, req.Password)
 	if err != nil {
@@ -116,12 +118,18 @@ func (Admin) Login(req *pb.LoginReq) (*pb.LoginResData, errors.Error) {
 	}
 	res.UID = int64(info.ID)
 	res.Name = info.Name
+	res.DomainID = int64(info.DomainID)
 	u := Role{}.getRoleIdsByUID(info.ID)
 	res.RoleIDs = helper.TransSliceType[uint, int64](u)
 	return &res, nil
 }
 func (Admin) Del(req *pb.DefaultPkReq) errors.Error {
 	err := DB.Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).Delete(&model.RbacAdmin{}).Error
+	if err != nil {
+		log.Logger.Error(err)
+		return errors.NewDBInternal(err)
+	}
+	err = DB.Where("uid = ? and domain_id=? ", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).Delete(&model.RbacRoleUser{}).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
@@ -211,6 +219,7 @@ func (Admin) SetRole(req *pb.AdminRoleSetReq) errors.Error {
 
 	err = DB.Create(&newData).Error
 	if err != nil {
+		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
 	return nil

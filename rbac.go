@@ -2,7 +2,6 @@ package share_rbac
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/liujunren93/share_rbac/log"
 	pb "github.com/liujunren93/share_rbac/rbac_pb"
@@ -41,9 +40,9 @@ func (r *Rbac) UpAuther(auther auth.Auther) {
 }
 func session(ctx context.Context) string {
 	if ctx, ok := ctx.(*gin.Context); ok {
-		domainId := ctx.GetInt64(pb.SESSION_DOMAIN_ID.String())
-		uid := ctx.GetInt64(pb.SESSION_UID.String())
-		roleIDs, ok := ctx.Get(pb.SESSION_ROLE_IDS.String())
+		domainId := ctx.GetInt64(pb.SESSION_SHARE_RBAC_DOMAIN_ID.String())
+		uid := ctx.GetInt64(pb.SESSION_SHARE_RBAC_UID.String())
+		roleIDs, ok := ctx.Get(pb.SESSION_SHARE_RBAC_ROLE_IDS.String())
 		session := pb.Session{
 			UID:      uid,
 			DomainID: domainId,
@@ -58,13 +57,14 @@ func session(ctx context.Context) string {
 
 }
 func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther auth.Auther, cli *client.Client, namespace, serverName string) (unLogin, Login router.Router, err error) {
-	fmt.Println("NewApiService")
+
 	log.Logger.Debug("NewApiService")
 	r.auther = auther
-	cli.AddOptions(client.WithCallWrappers(metadata.NewClientWrapper("rbac_session", session)))
+	cli.AddOptions(client.WithCallWrappers(metadata.NewClientWrapper(pb.SESSION_SHARE_RBAC_METADATA_KEY.String(), session)))
 	if namespace != "" {
 		cli.AddOptions(client.WithNamespace(namespace))
 	}
+
 	cci, err := cli.Client(serverName)
 	if err != nil {
 		log.Logger.Error(err)

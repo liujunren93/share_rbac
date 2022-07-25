@@ -8,6 +8,7 @@ import (
 	"github.com/liujunren93/share_utils/common/set"
 	"github.com/liujunren93/share_utils/errors"
 	"github.com/liujunren93/share_utils/helper"
+
 	"gorm.io/gorm"
 )
 
@@ -137,11 +138,18 @@ func (Permission) PathList(req *pb.PermissionPathListReq) []model.RbacPath {
 	}
 	return Path{}.list(DB, []string{"id,title,name,path"}, uintSet.List()...)
 }
-
+func (Permission) pathDel(id uint) errors.Error {
+	err := DB.Where("path_id=?", id).Delete(&model.RbacPermissionPath{}).Error
+	if err != nil {
+		log.Logger.Error(err)
+		return errors.NewDBInternal(err)
+	}
+	return nil
+}
 func (Permission) PathSet(req *pb.PermissionPathSetReq) errors.Error {
 	var err error
 	if len(req.PathIDs) == 0 {
-		err = DB.Where("permission_id=?", req.PermissionID, req.PathIDs).Delete(&model.RbacPermissionPath{}).Error
+		err = DB.Where("permission_id=?", req.PermissionID).Delete(&model.RbacPermissionPath{}).Error
 	} else {
 		err = DB.Where("permission_id=? and path_id not in ?", req.PermissionID, req.PathIDs).Delete(&model.RbacPermissionPath{}).Error
 	}
