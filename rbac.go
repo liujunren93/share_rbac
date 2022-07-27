@@ -5,6 +5,7 @@ import (
 
 	"github.com/liujunren93/share_rbac/log"
 	pb "github.com/liujunren93/share_rbac/rbac_pb"
+	"github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	"github.com/liujunren93/share/client"
@@ -31,6 +32,11 @@ func NewRbac(mq mq.Mqer) *Rbac {
 	return &Rbac{mq: mq}
 }
 
+func (r *Rbac) SetLogger(logger *logrus.Logger) {
+
+	log.InitLogger(logger)
+	log.Logger.Debug("rbac.setlogger")
+}
 func (r *Rbac) UpAuther(auther auth.Auther) {
 	log.Logger.Debug("UpAuther", auther)
 	r.auther = auther
@@ -58,7 +64,6 @@ func session(ctx context.Context) string {
 }
 func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther auth.Auther, cli *client.Client, namespace, serverName string) (unLogin, Login router.Router, err error) {
 
-	log.Logger.Debug("NewApiService")
 	r.auther = auther
 	cli.AddOptions(client.WithCallWrappers(metadata.NewClientWrapper(pb.SESSION_SHARE_RBAC_METADATA_KEY.String(), session)))
 	if namespace != "" {
@@ -99,6 +104,7 @@ func (r *Rbac) initRbacRoute(engine *gin.Engine) (unLogin, login router.Router, 
 	auth := rbacRouter.Group("auth").White("rbac")
 	{
 		auth.POST("/login", rbac.Login)
+		auth.POST("/register", rbac.Registry)
 		auth.POST("/refreshToken", rbac.RefreshToken)
 		auth.Use(middleware.Auth)
 

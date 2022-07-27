@@ -1,7 +1,7 @@
 package log
 
 import (
-	utilsLog "github.com/liujunren93/share_utils/log"
+	"github.com/sirupsen/logrus"
 )
 
 /**
@@ -9,4 +9,8 @@ import (
 * @Date: 2022/3/7 15:40
  */
 
-var Logger = utilsLog.Logger
+var Logger *logrus.Logger
+
+func InitLogger(log *logrus.Logger) {
+	Logger = log
+}

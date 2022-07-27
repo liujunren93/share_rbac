@@ -58,6 +58,7 @@ service Rbac {
   rpc AccountEdit(AccountEditReq)returns(DefaultRes);
   rpc AccountInfo(DefaultPkReq)returns(DefaultRes);
   rpc Login(LoginReq)returns(LoginRes);
+  rpc Registry(RegistryReq)returns(DefaultRes);
   rpc RolePermission(RolePermissionReq)returns(DefaultRes); 
 
   rpc GetDomainPolicy(GetDomainPolicyReq)returns(DefaultRes);

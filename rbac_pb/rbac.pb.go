@@ -30,7 +30,7 @@ var file_rbac_proto_rawDesc = []byte{
 	0x2e, 0x65, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x17, 0x70,
 	0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x2e, 0x65, 0x6e, 0x74, 0x69, 0x74, 0x79,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a, 0x13, 0x64, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x2e, 0x65,
-	0x6e, 0x74, 0x69, 0x74, 0x79, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x32, 0xa4, 0x14, 0x0a, 0x04,
+	0x6e, 0x74, 0x69, 0x74, 0x79, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x32, 0xdf, 0x14, 0x0a, 0x04,
 	0x52, 0x62, 0x61, 0x63, 0x12, 0x3e, 0x0a, 0x0b, 0x4d, 0x44, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x4c,
 	0x69, 0x73, 0x74, 0x12, 0x18, 0x2e, 0x72, 0x62, 0x61, 0x63, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
 	0x44, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x4c, 0x69, 0x73, 0x74, 0x52, 0x65, 0x71, 0x1a, 0x15, 0x2e,
@@ -184,17 +184,21 @@ var file_rbac_proto_rawDesc = []byte{
 	0x31, 0x0a, 0x05, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x12, 0x13, 0x2e, 0x72, 0x62, 0x61, 0x63, 0x50,
 	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x1a, 0x13, 0x2e,
 	0x72, 0x62, 0x61, 0x63, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x4c, 0x6f, 0x67, 0x69, 0x6e, 0x52,
-	0x65, 0x73, 0x12, 0x45, 0x0a, 0x0e, 0x52, 0x6f, 0x6c, 0x65, 0x50, 0x65, 0x72, 0x6d, 0x69, 0x73,
-	0x73, 0x69, 0x6f, 0x6e, 0x12, 0x1c, 0x2e, 0x72, 0x62, 0x61, 0x63, 0x50, 0x72, 0x6f, 0x74, 0x6f,
-	0x2e, 0x52, 0x6f, 0x6c, 0x65, 0x50, 0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x52,
-	0x65, 0x71, 0x1a, 0x15, 0x2e, 0x72, 0x62, 0x61, 0x63, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x44,
-	0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x52, 0x65, 0x73, 0x12, 0x47, 0x0a, 0x0f, 0x47, 0x65, 0x74,
-	0x44, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x12, 0x1d, 0x2e, 0x72,
-	0x62, 0x61, 0x63, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x47, 0x65, 0x74, 0x44, 0x6f, 0x6d, 0x61,
-	0x69, 0x6e, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x52, 0x65, 0x71, 0x1a, 0x15, 0x2e, 0x72, 0x62,
-	0x61, 0x63, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x44, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x52,
-	0x65, 0x73, 0x42, 0x14, 0x5a, 0x12, 0x2e, 0x2e, 0x2f, 0x72, 0x62, 0x61, 0x63, 0x5f, 0x70, 0x62,
-	0x3b, 0x72, 0x62, 0x61, 0x63, 0x5f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x65, 0x73, 0x12, 0x39, 0x0a, 0x08, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x12, 0x16,
+	0x2e, 0x72, 0x62, 0x61, 0x63, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73,
+	0x74, 0x72, 0x79, 0x52, 0x65, 0x71, 0x1a, 0x15, 0x2e, 0x72, 0x62, 0x61, 0x63, 0x50, 0x72, 0x6f,
+	0x74, 0x6f, 0x2e, 0x44, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x52, 0x65, 0x73, 0x12, 0x45, 0x0a,
+	0x0e, 0x52, 0x6f, 0x6c, 0x65, 0x50, 0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x12,
+	0x1c, 0x2e, 0x72, 0x62, 0x61, 0x63, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x52, 0x6f, 0x6c, 0x65,
+	0x50, 0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x1a, 0x15, 0x2e,
+	0x72, 0x62, 0x61, 0x63, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x44, 0x65, 0x66, 0x61, 0x75, 0x6c,
+	0x74, 0x52, 0x65, 0x73, 0x12, 0x47, 0x0a, 0x0f, 0x47, 0x65, 0x74, 0x44, 0x6f, 0x6d, 0x61, 0x69,
+	0x6e, 0x50, 0x6f, 0x6c, 0x69, 0x63, 0x79, 0x12, 0x1d, 0x2e, 0x72, 0x62, 0x61, 0x63, 0x50, 0x72,
+	0x6f, 0x74, 0x6f, 0x2e, 0x47, 0x65, 0x74, 0x44, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x50, 0x6f, 0x6c,
+	0x69, 0x63, 0x79, 0x52, 0x65, 0x71, 0x1a, 0x15, 0x2e, 0x72, 0x62, 0x61, 0x63, 0x50, 0x72, 0x6f,
+	0x74, 0x6f, 0x2e, 0x44, 0x65, 0x66, 0x61, 0x75, 0x6c, 0x74, 0x52, 0x65, 0x73, 0x42, 0x14, 0x5a,
+	0x12, 0x2e, 0x2e, 0x2f, 0x72, 0x62, 0x61, 0x63, 0x5f, 0x70, 0x62, 0x3b, 0x72, 0x62, 0x61, 0x63,
+	0x5f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var file_rbac_proto_goTypes = []interface{}{
@@ -223,10 +227,11 @@ var file_rbac_proto_goTypes = []interface{}{
 	(*AdminMenuTreeReq)(nil),      // 22: rbacProto.AdminMenuTreeReq
 	(*AccountEditReq)(nil),        // 23: rbacProto.AccountEditReq
 	(*LoginReq)(nil),              // 24: rbacProto.LoginReq
-	(*RolePermissionReq)(nil),     // 25: rbacProto.RolePermissionReq
-	(*GetDomainPolicyReq)(nil),    // 26: rbacProto.GetDomainPolicyReq
-	(*DefaultRes)(nil),            // 27: rbacProto.DefaultRes
-	(*LoginRes)(nil),              // 28: rbacProto.LoginRes
+	(*RegistryReq)(nil),           // 25: rbacProto.RegistryReq
+	(*RolePermissionReq)(nil),     // 26: rbacProto.RolePermissionReq
+	(*GetDomainPolicyReq)(nil),    // 27: rbacProto.GetDomainPolicyReq
+	(*DefaultRes)(nil),            // 28: rbacProto.DefaultRes
+	(*LoginRes)(nil),              // 29: rbacProto.LoginRes
 }
 var file_rbac_proto_depIdxs = []int32{
 	0,  // 0: rbacProto.Rbac.MDomainList:input_type -> rbacProto.DomainListReq
@@ -266,49 +271,51 @@ var file_rbac_proto_depIdxs = []int32{
 	23, // 34: rbacProto.Rbac.AccountEdit:input_type -> rbacProto.AccountEditReq
 	3,  // 35: rbacProto.Rbac.AccountInfo:input_type -> rbacProto.DefaultPkReq
 	24, // 36: rbacProto.Rbac.Login:input_type -> rbacProto.LoginReq
-	25, // 37: rbacProto.Rbac.RolePermission:input_type -> rbacProto.RolePermissionReq
-	26, // 38: rbacProto.Rbac.GetDomainPolicy:input_type -> rbacProto.GetDomainPolicyReq
-	27, // 39: rbacProto.Rbac.MDomainList:output_type -> rbacProto.DefaultRes
-	27, // 40: rbacProto.Rbac.MDomainCreate:output_type -> rbacProto.DefaultRes
-	27, // 41: rbacProto.Rbac.MDomainUpdate:output_type -> rbacProto.DefaultRes
-	27, // 42: rbacProto.Rbac.MDomainDel:output_type -> rbacProto.DefaultRes
-	27, // 43: rbacProto.Rbac.MDomainInfo:output_type -> rbacProto.DefaultRes
-	27, // 44: rbacProto.Rbac.MAdminList:output_type -> rbacProto.DefaultRes
-	27, // 45: rbacProto.Rbac.MAdminInfo:output_type -> rbacProto.DefaultRes
-	27, // 46: rbacProto.Rbac.MAdminCreate:output_type -> rbacProto.DefaultRes
-	27, // 47: rbacProto.Rbac.MAdminUpdate:output_type -> rbacProto.DefaultRes
-	27, // 48: rbacProto.Rbac.MAdminDel:output_type -> rbacProto.DefaultRes
-	27, // 49: rbacProto.Rbac.MAdminRoleList:output_type -> rbacProto.DefaultRes
-	27, // 50: rbacProto.Rbac.MAdminRoleSet:output_type -> rbacProto.DefaultRes
-	27, // 51: rbacProto.Rbac.MAdminPermission:output_type -> rbacProto.DefaultRes
-	27, // 52: rbacProto.Rbac.MRoleList:output_type -> rbacProto.DefaultRes
-	27, // 53: rbacProto.Rbac.MRoleInfo:output_type -> rbacProto.DefaultRes
-	27, // 54: rbacProto.Rbac.MRoleCreate:output_type -> rbacProto.DefaultRes
-	27, // 55: rbacProto.Rbac.MRoleUpdate:output_type -> rbacProto.DefaultRes
-	27, // 56: rbacProto.Rbac.MRoleDel:output_type -> rbacProto.DefaultRes
-	27, // 57: rbacProto.Rbac.MRolePermissionList:output_type -> rbacProto.DefaultRes
-	27, // 58: rbacProto.Rbac.MRolePermissionSet:output_type -> rbacProto.DefaultRes
-	27, // 59: rbacProto.Rbac.MPermissionList:output_type -> rbacProto.DefaultRes
-	27, // 60: rbacProto.Rbac.MPermissionInfo:output_type -> rbacProto.DefaultRes
-	27, // 61: rbacProto.Rbac.MPermissionCreate:output_type -> rbacProto.DefaultRes
-	27, // 62: rbacProto.Rbac.MPermissionUpdate:output_type -> rbacProto.DefaultRes
-	27, // 63: rbacProto.Rbac.MPermissionDel:output_type -> rbacProto.DefaultRes
-	27, // 64: rbacProto.Rbac.MPermissionPathList:output_type -> rbacProto.DefaultRes
-	27, // 65: rbacProto.Rbac.MPermissionPathSet:output_type -> rbacProto.DefaultRes
-	27, // 66: rbacProto.Rbac.MPathList:output_type -> rbacProto.DefaultRes
-	27, // 67: rbacProto.Rbac.MPathInfo:output_type -> rbacProto.DefaultRes
-	27, // 68: rbacProto.Rbac.MPathCreate:output_type -> rbacProto.DefaultRes
-	27, // 69: rbacProto.Rbac.MPathUpdate:output_type -> rbacProto.DefaultRes
-	27, // 70: rbacProto.Rbac.MPathDel:output_type -> rbacProto.DefaultRes
-	27, // 71: rbacProto.Rbac.AdminMenuTree:output_type -> rbacProto.DefaultRes
-	28, // 72: rbacProto.Rbac.AdminInfo:output_type -> rbacProto.LoginRes
-	27, // 73: rbacProto.Rbac.AccountEdit:output_type -> rbacProto.DefaultRes
-	27, // 74: rbacProto.Rbac.AccountInfo:output_type -> rbacProto.DefaultRes
-	28, // 75: rbacProto.Rbac.Login:output_type -> rbacProto.LoginRes
-	27, // 76: rbacProto.Rbac.RolePermission:output_type -> rbacProto.DefaultRes
-	27, // 77: rbacProto.Rbac.GetDomainPolicy:output_type -> rbacProto.DefaultRes
-	39, // [39:78] is the sub-list for method output_type
-	0,  // [0:39] is the sub-list for method input_type
+	25, // 37: rbacProto.Rbac.Registry:input_type -> rbacProto.RegistryReq
+	26, // 38: rbacProto.Rbac.RolePermission:input_type -> rbacProto.RolePermissionReq
+	27, // 39: rbacProto.Rbac.GetDomainPolicy:input_type -> rbacProto.GetDomainPolicyReq
+	28, // 40: rbacProto.Rbac.MDomainList:output_type -> rbacProto.DefaultRes
+	28, // 41: rbacProto.Rbac.MDomainCreate:output_type -> rbacProto.DefaultRes
+	28, // 42: rbacProto.Rbac.MDomainUpdate:output_type -> rbacProto.DefaultRes
+	28, // 43: rbacProto.Rbac.MDomainDel:output_type -> rbacProto.DefaultRes
+	28, // 44: rbacProto.Rbac.MDomainInfo:output_type -> rbacProto.DefaultRes
+	28, // 45: rbacProto.Rbac.MAdminList:output_type -> rbacProto.DefaultRes
+	28, // 46: rbacProto.Rbac.MAdminInfo:output_type -> rbacProto.DefaultRes
+	28, // 47: rbacProto.Rbac.MAdminCreate:output_type -> rbacProto.DefaultRes
+	28, // 48: rbacProto.Rbac.MAdminUpdate:output_type -> rbacProto.DefaultRes
+	28, // 49: rbacProto.Rbac.MAdminDel:output_type -> rbacProto.DefaultRes
+	28, // 50: rbacProto.Rbac.MAdminRoleList:output_type -> rbacProto.DefaultRes
+	28, // 51: rbacProto.Rbac.MAdminRoleSet:output_type -> rbacProto.DefaultRes
+	28, // 52: rbacProto.Rbac.MAdminPermission:output_type -> rbacProto.DefaultRes
+	28, // 53: rbacProto.Rbac.MRoleList:output_type -> rbacProto.DefaultRes
+	28, // 54: rbacProto.Rbac.MRoleInfo:output_type -> rbacProto.DefaultRes
+	28, // 55: rbacProto.Rbac.MRoleCreate:output_type -> rbacProto.DefaultRes
+	28, // 56: rbacProto.Rbac.MRoleUpdate:output_type -> rbacProto.DefaultRes
+	28, // 57: rbacProto.Rbac.MRoleDel:output_type -> rbacProto.DefaultRes
+	28, // 58: rbacProto.Rbac.MRolePermissionList:output_type -> rbacProto.DefaultRes
+	28, // 59: rbacProto.Rbac.MRolePermissionSet:output_type -> rbacProto.DefaultRes
+	28, // 60: rbacProto.Rbac.MPermissionList:output_type -> rbacProto.DefaultRes
+	28, // 61: rbacProto.Rbac.MPermissionInfo:output_type -> rbacProto.DefaultRes
+	28, // 62: rbacProto.Rbac.MPermissionCreate:output_type -> rbacProto.DefaultRes
+	28, // 63: rbacProto.Rbac.MPermissionUpdate:output_type -> rbacProto.DefaultRes
+	28, // 64: rbacProto.Rbac.MPermissionDel:output_type -> rbacProto.DefaultRes
+	28, // 65: rbacProto.Rbac.MPermissionPathList:output_type -> rbacProto.DefaultRes
+	28, // 66: rbacProto.Rbac.MPermissionPathSet:output_type -> rbacProto.DefaultRes
+	28, // 67: rbacProto.Rbac.MPathList:output_type -> rbacProto.DefaultRes
+	28, // 68: rbacProto.Rbac.MPathInfo:output_type -> rbacProto.DefaultRes
+	28, // 69: rbacProto.Rbac.MPathCreate:output_type -> rbacProto.DefaultRes
+	28, // 70: rbacProto.Rbac.MPathUpdate:output_type -> rbacProto.DefaultRes
+	28, // 71: rbacProto.Rbac.MPathDel:output_type -> rbacProto.DefaultRes
+	28, // 72: rbacProto.Rbac.AdminMenuTree:output_type -> rbacProto.DefaultRes
+	29, // 73: rbacProto.Rbac.AdminInfo:output_type -> rbacProto.LoginRes
+	28, // 74: rbacProto.Rbac.AccountEdit:output_type -> rbacProto.DefaultRes
+	28, // 75: rbacProto.Rbac.AccountInfo:output_type -> rbacProto.DefaultRes
+	29, // 76: rbacProto.Rbac.Login:output_type -> rbacProto.LoginRes
+	28, // 77: rbacProto.Rbac.Registry:output_type -> rbacProto.DefaultRes
+	28, // 78: rbacProto.Rbac.RolePermission:output_type -> rbacProto.DefaultRes
+	28, // 79: rbacProto.Rbac.GetDomainPolicy:output_type -> rbacProto.DefaultRes
+	40, // [40:80] is the sub-list for method output_type
+	0,  // [0:40] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name

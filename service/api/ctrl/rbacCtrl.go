@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	pb "github.com/liujunren93/share_rbac/rbac_pb"
 	"github.com/liujunren93/share_utils/common/auth"
-	"github.com/liujunren93/share_utils/common/metadata"
 	"github.com/liujunren93/share_utils/common/mq"
 	"github.com/liujunren93/share_utils/errors"
 	"github.com/liujunren93/share_utils/netHelper"
@@ -434,9 +433,7 @@ func (ctrl *rbacCtrl) Login(ctx *gin.Context) {
 		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
 		return
 	}
-	var c context.Context
-	c, _ = metadata.SetVal(ctx, "111", "22")
-	res, err := ctrl.grpcClient.Login(c, &req)
+	res, err := ctrl.grpcClient.Login(ctx, &req)
 	if err != nil {
 		netHelper.Response(ctx, res, err, nil)
 		return
@@ -453,6 +450,16 @@ func (ctrl *rbacCtrl) Login(ctx *gin.Context) {
 	t, err := ctrl.Auther.Token("")
 	netHelper.Response(ctx, nil, err, map[string]interface{}{"token": t, "user_info": res.Data})
 
+}
+
+func (ctrl *rbacCtrl) Registry(ctx *gin.Context) {
+	var req pb.RegistryReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		return
+	}
+	res, err := ctrl.grpcClient.Registry(ctx, &req)
+	netHelper.Response(ctx, res, err, nil)
 }
 
 type RefreshTokenReq struct {

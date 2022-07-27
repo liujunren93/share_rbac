@@ -1,30 +1,17 @@
 package test
 
 import (
-	"context"
 	"net/http"
-	"strconv"
 	"testing"
-	"time"
 
-	re "github.com/go-redis/redis/v8"
-	"github.com/liujunren93/share_rbac/log"
-	"github.com/liujunren93/share_utils/client/grpc"
-	"github.com/liujunren93/share_utils/middleware"
 	"github.com/liujunren93/share_utils/server"
 	"gorm.io/gorm"
 
-	"github.com/gin-gonic/gin"
 	"github.com/liujunren93/share_rbac"
 
 	_ "net/http/pprof"
 
-	"github.com/liujunren93/share_utils/common/auth"
-	"github.com/liujunren93/share_utils/common/auth/jwt"
-	"github.com/liujunren93/share_utils/common/mq/redis"
 	g "github.com/liujunren93/share_utils/databases/gorm"
-	dbredis "github.com/liujunren93/share_utils/databases/redis"
-	"github.com/sirupsen/logrus"
 )
 
 /**
@@ -34,12 +21,12 @@ import (
 var app *share_rbac.Rbac
 
 func init() {
-	r, _ := dbredis.NewRedis(&re.Options{
-		Network: "tcp",
-		Addr:    "node1:6379",
-	})
-	app = share_rbac.NewRbac(redis.NewMq(r), jwt.NewAuth(auth.WithExpiry(10000), auth.WithSecret("www.sharelie.com")))
-	log.Logger = logrus.New()
+	// r, _ := dbredis.NewRedis(&re.Options{
+	// 	Network: "tcp",
+	// 	Addr:    "node1:6379",
+	// })
+	// app = share_rbac.NewRbac(redis.NewMq(r), jwt.NewAuth(auth.WithExpiry(10000), auth.WithSecret("www.sharelie.com")))
+	// log.Logger = logrus.New()
 }
 func InitRbacDB() *gorm.DB {
 	mysql, err := g.NewMysql(&g.Mysql{
@@ -56,26 +43,26 @@ func InitRbacDB() *gorm.DB {
 	return mysql
 }
 func initServer() {
-	engine := gin.Default()
-	engine.Use(middleware.Cors)
+	// engine := gin.Default()
+	// engine.Use(middleware.Cors)
 
-	c := grpc.NewClient(grpc.WithBuildTargetFunc(func(args ...string) string { return "127.0.0.1:19092" }))
-	shareClient, err := c.GetShareClient()
-	if err != nil {
-		panic(err)
-	}
-	go func() {
-		var i int
-		for {
-			time.Sleep(time.Second * 20)
-			i++
-			app.UpAuther(jwt.NewAuth(auth.WithExpiry(100000), auth.WithSecret(strconv.Itoa(i))))
-		}
+	// c := grpc.NewClient(grpc.WithBuildTargetFunc(func(args ...string) string { return "127.0.0.1:19092" }))
+	// shareClient, err := c.GetShareClient()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// go func() {
+	// 	var i int
+	// 	for {
+	// 		time.Sleep(time.Second * 20)
+	// 		i++
+	// 		app.UpAuther(jwt.NewAuth(auth.WithExpiry(100000), auth.WithSecret(strconv.Itoa(i))))
+	// 	}
 
-	}()
+	// }()
 
-	app.NewApiService(context.TODO(), engine, shareClient, "", "rbac")
-	engine.Run(":9091")
+	// // app.NewApiService(context.TODO(), engine, shareClient, "", "rbac")
+	// engine.Run(":9091")
 }
 
 func TestInitGrpc(t *testing.T) {

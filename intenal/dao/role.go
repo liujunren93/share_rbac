@@ -46,16 +46,26 @@ func (Role) list(db *gorm.DB, domainId int64, name string, ids []uint) []model.R
 	return list
 }
 
-func (Role) Create(req *pb.RoleCreateReq) errors.Error {
-	first := DB.Where("name=?", req.Name).First(&model.RbacRole{})
-	if first.RowsAffected > 0 {
-		return errors.NewDBDuplication("name")
-	}
-	err := DB.Create(&model.RbacRole{
+func (dao Role) Create(req *pb.RoleCreateReq) errors.Error {
+	role := model.RbacRole{
 		DomainID: uint(req.DomainID),
 		Name:     req.Name,
 		Desc:     req.Desc,
-	}).Error
+	}
+	err := dao.create(DB, &role)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
+
+func (Role) create(tx *gorm.DB, role *model.RbacRole) errors.Error {
+	first := DB.Where("domain_id=? and  name=?", role.DomainID, role.Name).First(&model.RbacRole{})
+	if first.RowsAffected > 0 {
+		return errors.NewDBDuplication("角色名已存在")
+	}
+	err := DB.Create(role).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
@@ -120,37 +130,48 @@ func (Role) rolePermission(domainId int64, roleId []uint) []model.RbacRolePermis
 	return list
 }
 
-func (Role) RolePermissionSet(req *pb.RolePermissionSetReq) errors.Error {
+func (dao Role) RolePermissionSet(req *pb.RolePermissionSetReq) errors.Error {
+	err := dao.rolePermissionSet(DB, uint(req.RoleID), uint(req.DomainID), helper.TransSliceType[int64, uint](req.PermissionIDS)...)
+	if err != nil {
+		log.Logger.Error("Role.RolePermissionSet", err)
+	}
+	return err
+}
+
+func (Role) rolePermissionSet(tx *gorm.DB, roleId, domainId uint, permissionIDS ...uint) errors.Error {
+	log.Logger.Debug("rolePermissionSet")
 	var err error
-	if len(req.PermissionIDS) == 0 {
-		err = DB.Where("role_id=?", req.RoleID).Delete(&model.RbacRolePermission{}).Error
+	if len(permissionIDS) == 0 {
+		err = tx.Where("role_id=?", roleId).Delete(&model.RbacRolePermission{}).Error
 	} else {
-		err = DB.Where("role_id=? and permission_id not in ?", req.RoleID, req.PermissionIDS).Delete(&model.RbacRolePermission{}).Error
+		err = tx.Where("role_id=? and permission_id not in ?", roleId, permissionIDS).Delete(&model.RbacRolePermission{}).Error
 	}
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
 	var list []model.RbacRolePermission
-	DB.Where("role_id=? and domain_id=?", req.RoleID, req.DomainID).Find(&list)
+	tx.Where("role_id=? and domain_id=?", roleId, domainId).Find(&list)
 	uintSet := set.NewSet[uint]()
 	for _, permission := range list {
 		uintSet.Add(permission.PermissionID)
 	}
-	addItems := uintSet.GetNewitems(helper.TransSliceType[int64, uint](req.PermissionIDS))
+	addItems := uintSet.GetNewitems(permissionIDS)
+	log.Logger.Debug("rolePermissionSet.newItem", addItems)
 	if len(addItems) == 0 {
 		return nil
 	}
+
 	var newData []model.RbacRolePermission
 	for _, id := range addItems {
 		newData = append(newData, model.RbacRolePermission{
-			RoleID:       uint(req.RoleID),
+			RoleID:       roleId,
 			PermissionID: id,
-			DomainID:     uint(req.DomainID),
+			DomainID:     domainId,
 		})
 	}
 
-	err = DB.Create(&newData).Error
+	err = tx.Create(&newData).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)

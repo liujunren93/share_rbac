@@ -122,3 +122,10 @@ message AdminRoleSetReq {
   int64 UID =3;
 
 }
+
+message RegistryReq {
+  string Domain  =1;// @gotags: json:"domain" binding:"required" 
+  string Account =2;// @gotags: json:"account" binding:"required"
+  string password =3;// @gotags: json:"password" binding:"required"
+  string Name=4;// @gotags: json:"name" binding:"required"
+}

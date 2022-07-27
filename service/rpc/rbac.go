@@ -51,6 +51,12 @@ func (r *Rbac) Login(ctx context.Context, req *pb.LoginReq) (*pb.LoginRes, error
 	return &res, netHelper.RpcResponse(&res, err, data)
 }
 
+func (r *Rbac) Registry(ctx context.Context, req *pb.RegistryReq) (*pb.DefaultRes, error) {
+	err := dao.Admin{}.Registry(req)
+	var res pb.DefaultRes
+	return &res, netHelper.RpcResponse(&res, err, nil)
+}
+
 func (r *Rbac) AccountEdit(ctx context.Context, req *pb.AccountEditReq) (*pb.DefaultRes, error) {
 
 	err := dao.Admin{}.Update(&pb.AdminUpdateReq{

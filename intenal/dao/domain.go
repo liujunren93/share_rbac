@@ -7,6 +7,7 @@ import (
 	pb "github.com/liujunren93/share_rbac/rbac_pb"
 	"github.com/liujunren93/share_utils/errors"
 	"github.com/liujunren93/share_utils/helper"
+	"gorm.io/gorm"
 )
 
 /**
@@ -48,18 +49,27 @@ func (Domain) info(id int64) model.RbacDomain {
 	return info
 }
 
-func (Domain) Create(req *pb.DomainCreateReq) errors.Error {
-	err := DB.Create(&model.RbacDomain{
+func (dao Domain) Create(req *pb.DomainCreateReq) errors.Error {
+	domain := model.RbacDomain{
 		Name:   req.Name,
 		Domain: req.Domain,
 		Status: int8(req.Status),
-	}).Error
+	}
+	err := dao.create(DB, &domain)
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
 	return nil
 }
+func (Domain) create(tx *gorm.DB, domain *model.RbacDomain) error {
+	err := tx.Create(domain).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (Domain) Update(req *pb.DomainUpdateReq) errors.Error {
 	zero := helper.Struct2MapSnakeNoZero(req)
 	delete(zero, "id")

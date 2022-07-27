@@ -207,3 +207,7 @@ func (dao Permission) PermissionPathMap(pids []uint) map[uint][]uint {
 	}
 	return ppMap
 }
+
+func initRootPermission(tx *gorm.DB, domainId uint) {
+
+}

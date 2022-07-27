@@ -809,6 +809,77 @@ func (x *AdminRoleSetReq) GetUID() int64 {
 	return 0
 }
 
+type RegistryReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Domain   string `protobuf:"bytes,1,opt,name=Domain,proto3" json:"domain" binding:"required"`     // @gotags: json:"domain" binding:"required"
+	Account  string `protobuf:"bytes,2,opt,name=Account,proto3" json:"account" binding:"required"`   // @gotags: json:"account" binding:"required"
+	Password string `protobuf:"bytes,3,opt,name=password,proto3" json:"password" binding:"required"` // @gotags: json:"password" binding:"required"
+	Name     string `protobuf:"bytes,4,opt,name=Name,proto3" json:"name" binding:"required"`         // @gotags: json:"name" binding:"required"
+}
+
+func (x *RegistryReq) Reset() {
+	*x = RegistryReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_admin_entity_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RegistryReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegistryReq) ProtoMessage() {}
+
+func (x *RegistryReq) ProtoReflect() protoreflect.Message {
+	mi := &file_admin_entity_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegistryReq.ProtoReflect.Descriptor instead.
+func (*RegistryReq) Descriptor() ([]byte, []int) {
+	return file_admin_entity_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *RegistryReq) GetDomain() string {
+	if x != nil {
+		return x.Domain
+	}
+	return ""
+}
+
+func (x *RegistryReq) GetAccount() string {
+	if x != nil {
+		return x.Account
+	}
+	return ""
+}
+
+func (x *RegistryReq) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+func (x *RegistryReq) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
 var File_admin_entity_proto protoreflect.FileDescriptor
 
 var file_admin_entity_proto_rawDesc = []byte{
@@ -887,9 +958,16 @@ var file_admin_entity_proto_rawDesc = []byte{
 	0x08, 0x44, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x49, 0x44, 0x12, 0x18, 0x0a, 0x07, 0x52, 0x6f, 0x6c,
 	0x65, 0x49, 0x44, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x03, 0x52, 0x07, 0x52, 0x6f, 0x6c, 0x65,
 	0x49, 0x44, 0x73, 0x12, 0x10, 0x0a, 0x03, 0x55, 0x49, 0x44, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03,
-	0x52, 0x03, 0x55, 0x49, 0x44, 0x42, 0x14, 0x5a, 0x12, 0x2e, 0x2e, 0x2f, 0x72, 0x62, 0x61, 0x63,
-	0x5f, 0x70, 0x62, 0x3b, 0x72, 0x62, 0x61, 0x63, 0x5f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x52, 0x03, 0x55, 0x49, 0x44, 0x22, 0x6f, 0x0a, 0x0b, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72,
+	0x79, 0x52, 0x65, 0x71, 0x12, 0x16, 0x0a, 0x06, 0x44, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x44, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x12, 0x18, 0x0a, 0x07,
+	0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x41,
+	0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f,
+	0x72, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f,
+	0x72, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x4e, 0x61, 0x6d, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x04, 0x4e, 0x61, 0x6d, 0x65, 0x42, 0x14, 0x5a, 0x12, 0x2e, 0x2e, 0x2f, 0x72, 0x62, 0x61,
+	0x63, 0x5f, 0x70, 0x62, 0x3b, 0x72, 0x62, 0x61, 0x63, 0x5f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -904,7 +982,7 @@ func file_admin_entity_proto_rawDescGZIP() []byte {
 	return file_admin_entity_proto_rawDescData
 }
 
-var file_admin_entity_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_admin_entity_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_admin_entity_proto_goTypes = []interface{}{
 	(*AdminCreateReq)(nil),   // 0: rbacProto.AdminCreateReq
 	(*AdminUpdateReq)(nil),   // 1: rbacProto.AdminUpdateReq
@@ -917,6 +995,7 @@ var file_admin_entity_proto_goTypes = []interface{}{
 	(*AdminMenuTreeReq)(nil), // 8: rbacProto.AdminMenuTreeReq
 	(*AdminRoleListReq)(nil), // 9: rbacProto.AdminRoleListReq
 	(*AdminRoleSetReq)(nil),  // 10: rbacProto.AdminRoleSetReq
+	(*RegistryReq)(nil),      // 11: rbacProto.RegistryReq
 }
 var file_admin_entity_proto_depIdxs = []int32{
 	6, // 0: rbacProto.LoginRes.Data:type_name -> rbacProto.LoginResData
@@ -1065,6 +1144,18 @@ func file_admin_entity_proto_init() {
 				return nil
 			}
 		}
+		file_admin_entity_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RegistryReq); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1072,7 +1163,7 @@ func file_admin_entity_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_admin_entity_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

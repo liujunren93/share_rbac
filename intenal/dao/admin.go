@@ -11,6 +11,7 @@ import (
 	"github.com/liujunren93/share_utils/common/set"
 	"github.com/liujunren93/share_utils/errors"
 	"github.com/liujunren93/share_utils/helper"
+	"gorm.io/gorm"
 )
 
 /**
@@ -123,6 +124,81 @@ func (Admin) Login(req *pb.LoginReq) (*pb.LoginResData, errors.Error) {
 	res.RoleIDs = helper.TransSliceType[uint, int64](u)
 	return &res, nil
 }
+func (Admin) getPwd(account, pwd string) (string, error) {
+	return helper.NewPassword(account, pwd, 10)
+}
+
+func (dao Admin) Registry(req *pb.RegistryReq) (Err errors.Error) {
+	tx := DB.Begin()
+	defer func() {
+		if Err != nil {
+			err := tx.Rollback().Error
+			if err != nil {
+				log.Logger.Error("db Rollback", err)
+			}
+		} else {
+			err := tx.Commit().Error
+			if err != nil {
+				log.Logger.Error("db Commit", err)
+			}
+		}
+	}()
+	domain := model.RbacDomain{
+		Status: 1,
+		Name:   req.Domain,
+	}
+	err := Domain{}.create(tx, &domain)
+	if err != nil {
+		log.Logger.Error(err)
+		return errors.NewDBInternal(err)
+	}
+	password, err := dao.getPwd(req.Account, req.Password)
+	if err != nil {
+		log.Logger.Error("dao.admin.Registry.getPwd", err)
+		return errors.New(errors.StatusInternalServerError, err)
+	}
+	admin := model.RbacAdmin{
+		Model:    model.Model{},
+		DomainID: domain.ID,
+		Account:  req.Account,
+		Name:     req.Name,
+		Password: password,
+		Status:   0,
+	}
+	err = tx.Create(&admin).Error
+	if err != nil {
+		log.Logger.Error(err)
+		return errors.NewDBInternal(err)
+	}
+	role := model.RbacRole{
+		DomainID: domain.ID,
+		Name:     "root",
+		Desc:     "root",
+		Status:   1,
+	}
+	err = Role{}.create(tx, &role)
+	if err != nil {
+		log.Logger.Error(err)
+		return errors.NewDBInternal(err)
+	}
+	err = dao.setRole(tx, domain.ID, admin.ID, role.ID)
+	if err != nil {
+		log.Logger.Error(err)
+		return errors.NewDBInternal(err)
+	}
+	permissionList := Permission{}.list(tx.Where("domain_id=-1 and status=1"), 0, 0)
+	var permissinIds []uint
+	for _, permission := range permissionList {
+		permissinIds = append(permissinIds, permission.ID)
+	}
+	err = Role{}.rolePermissionSet(tx, role.ID, domain.ID, permissinIds...)
+	if err != nil {
+		log.Logger.Error(err)
+		return errors.NewDBInternal(err)
+	}
+	return nil
+}
+
 func (Admin) Del(req *pb.DefaultPkReq) errors.Error {
 	err := DB.Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).Delete(&model.RbacAdmin{}).Error
 	if err != nil {
@@ -182,16 +258,21 @@ func (Admin) RoleList(req *pb.AdminRoleListReq) []model.RbacRole {
 	return Role{}.list(DB, req.DomainID, "", us.List())
 }
 
-func (Admin) SetRole(req *pb.AdminRoleSetReq) errors.Error {
+func (dao Admin) SetRole(req *pb.AdminRoleSetReq) errors.Error {
+
+	return dao.setRole(DB, uint(req.DomainID), uint(req.UID), helper.TransSliceType[int64, uint](req.RoleIDs)...)
+}
+
+func (Admin) setRole(tx *gorm.DB, domainId, uid uint, roleIds ...uint) errors.Error {
 	var err error
-	if len(req.RoleIDs) == 0 {
-		err := DB.Where("domain_id=? and uid=? ", req.DomainID, req.UID).Delete(&model.RbacRoleUser{}).Error
+	if len(roleIds) == 0 {
+		err := tx.Where("domain_id=? and uid=? ", domainId, uid).Delete(&model.RbacRoleUser{}).Error
 		if err != nil {
 			log.Logger.Error(err)
 			return errors.NewDBInternal(err)
 		}
 	} else {
-		err := DB.Where("domain_id=? and uid=? and role_id not in ?", req.DomainID, req.UID, req.RoleIDs).Delete(&model.RbacRoleUser{}).Error
+		err := tx.Where("domain_id=? and uid=? and role_id not in ?", domainId, uid, roleIds).Delete(&model.RbacRoleUser{}).Error
 		if err != nil {
 			log.Logger.Error(err)
 			return errors.NewDBInternal(err)
@@ -199,25 +280,25 @@ func (Admin) SetRole(req *pb.AdminRoleSetReq) errors.Error {
 	}
 
 	var list []model.RbacRoleUser
-	DB.Where("domain_id=? and uid=? ", req.DomainID, req.UID).Find(&list)
+	tx.Where("domain_id=? and uid=? ", domainId, uid).Find(&list)
 	us := set.NewSet[uint]()
 	for _, v := range list {
 		us.Add(v.RoleID)
 	}
-	newItems := us.GetNewitems(helper.TransSliceType[int64, uint](req.RoleIDs))
+	newItems := us.GetNewitems(roleIds)
 	if len(newItems) == 0 {
 		return nil
 	}
 	var newData []model.RbacRoleUser
 	for _, v := range newItems {
 		newData = append(newData, model.RbacRoleUser{
-			DomainID: uint(req.DomainID),
+			DomainID: domainId,
 			RoleID:   v,
-			UID:      uint(req.UID),
+			UID:      uid,
 		})
 	}
 
-	err = DB.Create(&newData).Error
+	err = tx.Create(&newData).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)

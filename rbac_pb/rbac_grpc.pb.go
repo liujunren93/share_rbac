@@ -55,6 +55,7 @@ type RbacClient interface {
 	AccountEdit(ctx context.Context, in *AccountEditReq, opts ...grpc.CallOption) (*DefaultRes, error)
 	AccountInfo(ctx context.Context, in *DefaultPkReq, opts ...grpc.CallOption) (*DefaultRes, error)
 	Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginRes, error)
+	Registry(ctx context.Context, in *RegistryReq, opts ...grpc.CallOption) (*DefaultRes, error)
 	RolePermission(ctx context.Context, in *RolePermissionReq, opts ...grpc.CallOption) (*DefaultRes, error)
 	GetDomainPolicy(ctx context.Context, in *GetDomainPolicyReq, opts ...grpc.CallOption) (*DefaultRes, error)
 }
@@ -400,6 +401,15 @@ func (c *rbacClient) Login(ctx context.Context, in *LoginReq, opts ...grpc.CallO
 	return out, nil
 }
 
+func (c *rbacClient) Registry(ctx context.Context, in *RegistryReq, opts ...grpc.CallOption) (*DefaultRes, error) {
+	out := new(DefaultRes)
+	err := c.cc.Invoke(ctx, "/rbacProto.Rbac/Registry", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *rbacClient) RolePermission(ctx context.Context, in *RolePermissionReq, opts ...grpc.CallOption) (*DefaultRes, error) {
 	out := new(DefaultRes)
 	err := c.cc.Invoke(ctx, "/rbacProto.Rbac/RolePermission", in, out, opts...)
@@ -459,6 +469,7 @@ type RbacServer interface {
 	AccountEdit(context.Context, *AccountEditReq) (*DefaultRes, error)
 	AccountInfo(context.Context, *DefaultPkReq) (*DefaultRes, error)
 	Login(context.Context, *LoginReq) (*LoginRes, error)
+	Registry(context.Context, *RegistryReq) (*DefaultRes, error)
 	RolePermission(context.Context, *RolePermissionReq) (*DefaultRes, error)
 	GetDomainPolicy(context.Context, *GetDomainPolicyReq) (*DefaultRes, error)
 }
@@ -577,6 +588,9 @@ func (UnimplementedRbacServer) AccountInfo(context.Context, *DefaultPkReq) (*Def
 }
 func (UnimplementedRbacServer) Login(context.Context, *LoginReq) (*LoginRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedRbacServer) Registry(context.Context, *RegistryReq) (*DefaultRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Registry not implemented")
 }
 func (UnimplementedRbacServer) RolePermission(context.Context, *RolePermissionReq) (*DefaultRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RolePermission not implemented")
@@ -1262,6 +1276,24 @@ func _Rbac_Login_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Rbac_Registry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegistryReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RbacServer).Registry(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rbacProto.Rbac/Registry",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RbacServer).Registry(ctx, req.(*RegistryReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Rbac_RolePermission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RolePermissionReq)
 	if err := dec(in); err != nil {
@@ -1452,6 +1484,10 @@ var Rbac_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _Rbac_Login_Handler,
+		},
+		{
+			MethodName: "Registry",
+			Handler:    _Rbac_Registry_Handler,
 		},
 		{
 			MethodName: "RolePermission",

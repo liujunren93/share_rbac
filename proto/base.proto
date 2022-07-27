@@ -9,7 +9,8 @@ enum SESSION{
   SHARE_RBAC_UID  =0;
   SHARE_RBAC_DOMAIN_ID =1;
   SHARE_RBAC_ROLE_IDS=2;
-  SHARE_RBAC_METADATA_KEY=3;
+  SHARE_RBAC_PL=3;
+  SHARE_RBAC_METADATA_KEY=4;
 }
 message DefaultRes {
   // @inject_tag: json:"code"
@@ -43,5 +44,6 @@ message DomainIDReq{
 message Session{
   int64 UID=1;
   int64 DomainID=2;
- repeated int64 RoleIDs=3;
+  int64 PL=3;
+ repeated int64 RoleIDs=4;
 }
