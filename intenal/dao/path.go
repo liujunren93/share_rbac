@@ -102,6 +102,9 @@ func (dao Path) Create(req *pb.PathCreateReq) (uint, errors.Error) {
 		Method:    req.Method,
 		Action:    req.Action,
 	}
+	if req.IsLock {
+		path.PL = dao.NewPL()
+	}
 	if req.Meta != nil {
 		marshal, err := json.Marshal(req.Meta)
 		if err != nil {
@@ -130,8 +133,11 @@ func (dao Path) Update(req *pb.PathUpdateReq) errors.Error {
 	if first.RowsAffected > 0 {
 		return errors.NewDBDuplication("account")
 	}
+
 	snake := helper.Struct2MapSnake(req)
-	delete(snake, "id")
+	// if req.IsLock {
+	// 	snake["pl"] = dao.NewPL()
+	// }
 	if req.Meta != nil {
 		b, _ := json.Marshal(&req.Meta)
 		snake["meta"] = string(b)

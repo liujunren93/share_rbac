@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -38,11 +39,14 @@ func (m *Model) getPL() (level, uid int) {
 
 func modelInfo(tx *gorm.DB) Model {
 	var mode Model
-	tx.Table(tx.Statement.Table).Select("pl").First(&mode)
+	err := tx.Table(tx.Statement.Table).Select("pl").First(&mode).Error
+
+	fmt.Println(err)
 	return mode
 }
 
 func (m *Model) BeforeUpdate(tx *gorm.DB) (err error) {
+	return nil
 	return m.checkPl(tx)
 }
 
@@ -73,7 +77,7 @@ func (m *Model) checkPl(tx *gorm.DB) error {
 		return nil
 	}
 
-	return m.checkPl(tx)
+	return nil
 }
 
 type ModelSmp struct {
@@ -81,5 +85,5 @@ type ModelSmp struct {
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
-	PL        uint           `gorm:"pl;type:varchar(20);not null;default:'';comment:'permission level'" json:"pl"`
+	PL        uint           `gorm:"pl;type:int;not null;default:0;comment:'permission level'" json:"pl"`
 }

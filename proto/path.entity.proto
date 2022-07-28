@@ -32,6 +32,8 @@ message PathCreateReq {
   string Key=13;
   // @gotags: json:"sort"
   int64 Sort=14;
+  // @gotags: json:"is_lock"
+  bool IsLock=15;
 
 }
 
@@ -46,7 +48,7 @@ message PathUpdateReq {
   int64 ParentID = 4;
   // @gotags: json:"path" 
   string Path = 5;
-  // @gotags: json:"id" binding:"required"
+  // @gotags: json:"id" binding:"required"  gorm:"-"
   int64 ID = 6;
   // @gotags: json:"name" binding:"required"
   string Name = 7;
@@ -62,8 +64,10 @@ message PathUpdateReq {
   string Action=12;
   // @gotags: json:"key" 
   string Key=13;
-    // @gotags: json:"sort"
-    int64 Sort=14;
+  // @gotags: json:"sort"
+  int64 Sort=14;
+  // @gotags: json:"is_lock" gorm:"-"
+  bool IsLock=15;
 
 }
 
@@ -81,9 +85,9 @@ message PathListReq {
   int64 PathType = 5;
  // @gotags: form:"-"
   int64 DomainID=6;
-    // @gotags: form:"sort_field"
-    string SortField=7;
-   // @gotags: form:"sort_order" binding:"oneof='' asc desc,required_with=SortField"
+  // @gotags: form:"sort_field"
+ string SortField=7;
+  // @gotags: form:"sort_order" binding:"oneof='' asc desc,required_with=SortField"
   string SortOrder=8;
 }
 

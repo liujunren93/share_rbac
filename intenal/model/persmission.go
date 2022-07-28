@@ -6,7 +6,7 @@ package model
  */
 
 type RbacPath struct {
-	ModelSmp
+	Model
 	Key       string `gorm:"key;type:varchar(100);not null;default:'';comment:'前端权限组'" json:"key,omitempty"`
 	Name      string `gorm:"name;type:varchar(100);not null;default:'';comment:'name'" json:"name,omitempty"`
 	Action    string `gorm:"action;type:varchar(100);not null;default:'';comment:'方法:前端权限标识'" json:"action,omitempty"`

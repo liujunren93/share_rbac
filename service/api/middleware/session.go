@@ -28,7 +28,7 @@ func Session(ctx *gin.Context) {
 			ctx.Set(ctrl.DOMIAN_ID, int64(domain.(float64)))
 		}
 		if pl, ok := data[ctrl.PL]; ok {
-			ctx.Set(ctrl.PL, pl.(float64))
+			ctx.Set(ctrl.PL, int64(pl.(float64)))
 		}
 		if roles, ok := data[ctrl.ROLES]; ok {
 			if roles != nil {

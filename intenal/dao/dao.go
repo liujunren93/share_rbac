@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"fmt"
 
 	model2 "github.com/liujunren93/share_rbac/intenal/model"
 	"github.com/liujunren93/share_rbac/rbac_pb"
@@ -21,9 +22,14 @@ type dao struct {
 }
 
 func (d dao) GetSession() *rbac_pb.Session {
-	var sess *rbac_pb.Session
+	var sess = new(rbac_pb.Session)
 	metadata.GetMessage(d.Ctx, rbac_pb.SESSION_SHARE_RBAC_METADATA_KEY.String(), sess)
 	return sess
+}
+
+func (d dao) NewPL() string {
+	session := d.GetSession()
+	return fmt.Sprintf("%d_%d", session.PL-1, session.UID)
 }
 
 func DB(ctx context.Context) *gorm.DB {
