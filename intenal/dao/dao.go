@@ -1,8 +1,6 @@
 package dao
 
 import (
-	"context"
-
 	model2 "github.com/liujunren93/share_rbac/intenal/model"
 	"gorm.io/gorm"
 )
@@ -12,11 +10,11 @@ import (
 * @Date: 2022/2/28 11:52
  */
 
-var Db *gorm.DB
+var DB *gorm.DB
 
-func DB(ctx context.Context) *gorm.DB {
-	return Db.WithContext(ctx)
-}
+// func DB(ctx context.Context) *gorm.DB {
+// 	return Db.WithContext(ctx)
+// }
 
 func pageSize(size int64) int {
 	if size == 0 {
@@ -31,7 +29,7 @@ func offset(size, offset int64) int {
 }
 
 func InitDB(db *gorm.DB) error {
-	Db = db
+	DB = db
 	list := []interface{}{
 		&model2.RbacAdmin{},
 		&model2.RbacRole{},

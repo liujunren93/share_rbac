@@ -44,7 +44,7 @@ func (r *Rbac) UpAuther(auther auth.Auther) {
 
 	middleware.UpdateAuther(auther)
 }
-func session(ctx context.Context) string {
+func session(ctx context.Context) ([]byte, error) {
 	if ctx, ok := ctx.(*gin.Context); ok {
 		domainId := ctx.GetInt64(pb.SESSION_SHARE_RBAC_DOMAIN_ID.String())
 		uid := ctx.GetInt64(pb.SESSION_SHARE_RBAC_UID.String())
@@ -56,9 +56,9 @@ func session(ctx context.Context) string {
 		if ok {
 			session.RoleIDs = roleIDs.([]int64)
 		}
-		return session.String()
+		return []byte(session.String()), nil
 	} else {
-		return ""
+		return nil, nil
 	}
 
 }
