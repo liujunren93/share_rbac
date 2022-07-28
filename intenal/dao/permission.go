@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"context"
+
 	"github.com/liujunren93/share_rbac/intenal/entity"
 	"github.com/liujunren93/share_rbac/intenal/model"
 	"github.com/liujunren93/share_rbac/log"
@@ -17,17 +19,18 @@ import (
 * @Date: 2022/2/28 11:45
  */
 type Permission struct {
+	dao
 }
 
 const REDIS_ALL_PERMISSION_KEY = "share_rbac_all_permission"
 
-func InitPerrmission() {
-
+func NewPermission(ctx context.Context) Permission {
+	return Permission{dao: dao{ctx}}
 }
 
 func (dao Permission) List(req *pb.PermissionListReq) entity.PermissionListRes {
 	var res entity.PermissionListRes
-	db := DB.Where("domain_id=-1 or domain_id=?", req.DomainID)
+	db := DB(dao.Ctx).Where("domain_id=-1 or domain_id=?", req.DomainID)
 	if req.Name != "" {
 		db = db.Where("name like ?", "%"+req.Name+"%")
 	}
@@ -43,7 +46,7 @@ func (dao Permission) List(req *pb.PermissionListReq) entity.PermissionListRes {
 	return res
 }
 
-func (Permission) count(db *gorm.DB, ids ...uint) int64 {
+func (dao Permission) count(db *gorm.DB, ids ...uint) int64 {
 
 	if len(ids) > 0 {
 		db = db.Where("id in ?", ids)
@@ -53,7 +56,7 @@ func (Permission) count(db *gorm.DB, ids ...uint) int64 {
 	return total
 }
 
-func (Permission) list(db *gorm.DB, limit, page int64, ids ...uint) []model.RbacPermission {
+func (dao Permission) list(db *gorm.DB, limit, page int64, ids ...uint) []model.RbacPermission {
 	var list []model.RbacPermission
 
 	if limit >= 0 {
@@ -75,15 +78,15 @@ func (dao Permission) permissionMap(db *gorm.DB, limit, page int64, ids ...uint)
 	return pmap
 }
 
-func (Permission) Info(req *pb.DefaultPkReq) model.RbacPermission {
+func (dao Permission) Info(req *pb.DefaultPkReq) model.RbacPermission {
 	var info model.RbacPermission
-	DB.Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).First(&info)
+	DB(dao.Ctx).Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).First(&info)
 	return info
 }
 
-func (Permission) Create(req *pb.PermissionCreateReq) (uint, errors.Error) {
+func (dao Permission) Create(req *pb.PermissionCreateReq) (uint, errors.Error) {
 	var info model.RbacPermission
-	first := DB.Where("name=?", req.Name).First(&info)
+	first := DB(dao.Ctx).Where("name=?", req.Name).First(&info)
 	if first.RowsAffected != 0 {
 		return 0, errors.NewDBDuplication("name")
 	}
@@ -92,7 +95,7 @@ func (Permission) Create(req *pb.PermissionCreateReq) (uint, errors.Error) {
 		Name:     req.Name,
 		Desc:     req.Desc,
 	}
-	err := DB.Create(&permission).Error
+	err := DB(dao.Ctx).Create(&permission).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return 0, errors.NewDBInternal(err)
@@ -100,15 +103,15 @@ func (Permission) Create(req *pb.PermissionCreateReq) (uint, errors.Error) {
 	return permission.ID, nil
 }
 
-func (Permission) Update(req *pb.PermissionUpdateReq) errors.Error {
+func (dao Permission) Update(req *pb.PermissionUpdateReq) errors.Error {
 	var info model.RbacPermission
-	first := DB.Where("domain_id=? and name=? and id!=?", req.DomainID, req.Name, req.ID).First(&info)
+	first := DB(dao.Ctx).Where("domain_id=? and name=? and id!=?", req.DomainID, req.Name, req.ID).First(&info)
 	if first.RowsAffected != 0 {
 		return errors.NewDBNoData("")
 	}
 	snake := helper.Struct2MapSnakeNoZero(req)
 	delete(snake, "id")
-	err := DB.Model(&model.RbacPermission{}).Where("id=? and domain_id=?", req.ID, req.DomainID).Updates(snake).Error
+	err := DB(dao.Ctx).Model(&model.RbacPermission{}).Where("id=? and domain_id=?", req.ID, req.DomainID).Updates(snake).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
@@ -116,8 +119,8 @@ func (Permission) Update(req *pb.PermissionUpdateReq) errors.Error {
 	return nil
 }
 
-func (Permission) Del(req *pb.DefaultPkReq) errors.Error {
-	err := DB.Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).Delete(&model.RbacPermission{}).Error
+func (dao Permission) Del(req *pb.DefaultPkReq) errors.Error {
+	err := DB(dao.Ctx).Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).Delete(&model.RbacPermission{}).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
@@ -125,9 +128,9 @@ func (Permission) Del(req *pb.DefaultPkReq) errors.Error {
 	return nil
 }
 
-func (Permission) PathList(req *pb.PermissionPathListReq) []model.RbacPath {
+func (dao Permission) PathList(req *pb.PermissionPathListReq) []model.RbacPath {
 	var list []model.RbacPermissionPath
-	DB.Where("permission_id=?", req.PermissionID).Find(&list)
+	DB(dao.Ctx).Where("permission_id=?", req.PermissionID).Find(&list)
 	uintSet := set.NewSet[uint]()
 	for _, item := range list {
 		uintSet.Add(item.PathID)
@@ -136,29 +139,29 @@ func (Permission) PathList(req *pb.PermissionPathListReq) []model.RbacPath {
 	if uintSet.Len() == 0 {
 		return nil
 	}
-	return Path{}.list(DB, []string{"id,title,name,path"}, uintSet.List()...)
+	return NewPath(dao.Ctx).list(DB(dao.Ctx), []string{"id,title,name,path"}, uintSet.List()...)
 }
-func (Permission) pathDel(id uint) errors.Error {
-	err := DB.Where("path_id=?", id).Delete(&model.RbacPermissionPath{}).Error
+func (dao Permission) pathDel(id uint) errors.Error {
+	err := DB(dao.Ctx).Where("path_id=?", id).Delete(&model.RbacPermissionPath{}).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
 	return nil
 }
-func (Permission) PathSet(req *pb.PermissionPathSetReq) errors.Error {
+func (dao Permission) PathSet(req *pb.PermissionPathSetReq) errors.Error {
 	var err error
 	if len(req.PathIDs) == 0 {
-		err = DB.Where("permission_id=?", req.PermissionID).Delete(&model.RbacPermissionPath{}).Error
+		err = DB(dao.Ctx).Where("permission_id=?", req.PermissionID).Delete(&model.RbacPermissionPath{}).Error
 	} else {
-		err = DB.Where("permission_id=? and path_id not in ?", req.PermissionID, req.PathIDs).Delete(&model.RbacPermissionPath{}).Error
+		err = DB(dao.Ctx).Where("permission_id=? and path_id not in ?", req.PermissionID, req.PathIDs).Delete(&model.RbacPermissionPath{}).Error
 	}
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
 	var list []model.RbacPermissionPath
-	DB.Where("permission_id=? and path_id in ?", req.PermissionID, req.PathIDs).Find(&list)
+	DB(dao.Ctx).Where("permission_id=? and path_id in ?", req.PermissionID, req.PathIDs).Find(&list)
 	uintSet := set.NewSet[uint]()
 	for _, path := range list {
 		uintSet.Add(path.PathID)
@@ -175,7 +178,7 @@ func (Permission) PathSet(req *pb.PermissionPathSetReq) errors.Error {
 			PathID:       id,
 		})
 	}
-	err = DB.Create(&newList).Error
+	err = DB(dao.Ctx).Create(&newList).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
@@ -183,9 +186,9 @@ func (Permission) PathSet(req *pb.PermissionPathSetReq) errors.Error {
 	return nil
 }
 
-func (Permission) getPermissionIDsByRoleIDs(roles []int64) []uint {
+func (dao Permission) getPermissionIDsByRoleIDs(roles []int64) []uint {
 	var rolePermissionList []model.RbacRolePermission
-	DB.Where("role_id in ?", roles).Find(&rolePermissionList)
+	DB(dao.Ctx).Where("role_id in ?", roles).Find(&rolePermissionList)
 	uintSet := set.NewSet[uint]()
 	for _, permission := range rolePermissionList {
 		uintSet.Add(permission.PermissionID)
@@ -195,7 +198,7 @@ func (Permission) getPermissionIDsByRoleIDs(roles []int64) []uint {
 
 func (dao Permission) PermissionPathList(pids []uint) []model.RbacPermissionPath {
 	var list []model.RbacPermissionPath
-	DB.Where("permission_id in ?", pids).Find(&list)
+	DB(dao.Ctx).Where("permission_id in ?", pids).Find(&list)
 	return list
 }
 

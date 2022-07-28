@@ -72,6 +72,7 @@ message LoginRes{
   string msg = 2;
   // @inject_tag: json:"data"
   LoginResData Data = 3;
+ 
 }
 
 message LoginResData{
@@ -79,10 +80,11 @@ message LoginResData{
   int64 UID=1;
   // @gotags: json:"name"
   string Name=2;
- // @gotags: json:"domain_id" binding:"required"
- int64 DomainID=4;
+ // @gotags: json:"domain_id" 
+ int64 DomainID=3;
    // @gotags: json:"role_ids"
- repeated int64  RoleIDs=3;
+ repeated int64  RoleIDs=4;
+ int64 PL =5; // @inject_tag: json:"pl"
 }
 
 message AccountEditReq{

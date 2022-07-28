@@ -6,7 +6,7 @@ package model
  */
 
 type RbacAdmin struct {
-	Model
+	ModelSmp
 	DomainID uint   `gorm:"domain_id;type:int;not null;default:0;comment:'domain_id,omitempty'"`
 	Account  string `gorm:"account;uniqueIndex;type:varchar(100);not null;default:'';comment:''" json:"account,omitempty" binding:"required"`
 	Name     string `gorm:"name;type:varchar(100);not null;default:'';comment:''" json:"name,omitempty"  binding:"required"`

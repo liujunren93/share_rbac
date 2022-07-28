@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 
@@ -20,11 +21,16 @@ import (
  */
 
 type Path struct {
+	dao
+}
+
+func NewPath(ctx context.Context) Path {
+	return Path{dao{ctx}}
 }
 
 func (dao Path) List(req *pb.PathListReq) entity.PathListRes {
 	var res entity.PathListRes
-	db := DB
+	db := DB(dao.Ctx)
 	if req.Name != "" {
 		db = db.Where("name like ?", "%"+req.Name+"%")
 	}
@@ -48,7 +54,7 @@ func (dao Path) List(req *pb.PathListReq) entity.PathListRes {
 
 	return res
 }
-func (Path) count(db *gorm.DB, ids ...uint) int64 {
+func (dao Path) count(db *gorm.DB, ids ...uint) int64 {
 
 	if len(ids) != 0 {
 		db = db.Where("id in ?", ids)
@@ -58,7 +64,7 @@ func (Path) count(db *gorm.DB, ids ...uint) int64 {
 	return total
 }
 
-func (Path) list(db *gorm.DB, selectField []string, ids ...uint) []model.RbacPath {
+func (dao Path) list(db *gorm.DB, selectField []string, ids ...uint) []model.RbacPath {
 	var list []model.RbacPath
 	if len(ids) != 0 {
 		db = db.Where("id in ?", ids)
@@ -78,8 +84,8 @@ func (dao Path) pathMap(db *gorm.DB, selectField []string, ids ...uint) map[uint
 	return pathM
 }
 
-func (Path) Create(req *pb.PathCreateReq) (uint, errors.Error) {
-	first := DB.Where("name=?", req.Name).First(&model.RbacPath{})
+func (dao Path) Create(req *pb.PathCreateReq) (uint, errors.Error) {
+	first := DB(dao.Ctx).Where("name=?", req.Name).First(&model.RbacPath{})
 	if first.RowsAffected > 0 {
 		return 0, errors.NewDBDuplication("name")
 	}
@@ -104,7 +110,7 @@ func (Path) Create(req *pb.PathCreateReq) (uint, errors.Error) {
 		}
 		path.Meta = string(marshal)
 	}
-	err := DB.Create(&path).Error
+	err := DB(dao.Ctx).Create(&path).Error
 	if err != nil {
 		return 0, errors.NewDBInternal(err)
 	}
@@ -112,15 +118,15 @@ func (Path) Create(req *pb.PathCreateReq) (uint, errors.Error) {
 
 }
 
-func (Path) Info(req *pb.DefaultPkReq) model.RbacPath {
+func (dao Path) Info(req *pb.DefaultPkReq) model.RbacPath {
 	var info model.RbacPath
-	DB.Where("id=?", req.Pk.(*pb.DefaultPkReq_ID).ID).First(&info)
+	DB(dao.Ctx).Where("id=?", req.Pk.(*pb.DefaultPkReq_ID).ID).First(&info)
 	return info
 }
 
-func (Path) Update(req *pb.PathUpdateReq) errors.Error {
+func (dao Path) Update(req *pb.PathUpdateReq) errors.Error {
 	var info model.RbacAdmin
-	first := DB.Where("id!=? and name=?", req.ID, req.Name).First(&info)
+	first := DB(dao.Ctx).Where("id!=? and name=?", req.ID, req.Name).First(&info)
 	if first.RowsAffected > 0 {
 		return errors.NewDBDuplication("account")
 	}
@@ -133,24 +139,24 @@ func (Path) Update(req *pb.PathUpdateReq) errors.Error {
 		delete(snake, "meta")
 	}
 
-	err := DB.Where("id=? ", req.ID).Model(&model.RbacPath{}).Updates(snake).Error
+	err := DB(dao.Ctx).Where("id=? ", req.ID).Model(&model.RbacPath{}).Updates(snake).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
 	return nil
 }
-func (Path) Del(req *pb.DefaultPkReq) errors.Error {
-	err := DB.Where("id=?", req.Pk.(*pb.DefaultPkReq_ID).ID).Delete(&model.RbacPath{}).Error
+func (dao Path) Del(req *pb.DefaultPkReq) errors.Error {
+	err := DB(dao.Ctx).Where("id=?", req.Pk.(*pb.DefaultPkReq_ID).ID).Delete(&model.RbacPath{}).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
-	return Permission{}.pathDel(uint(req.Pk.(*pb.DefaultPkReq_ID).ID))
+	return NewPermission(dao.Ctx).pathDel(uint(req.Pk.(*pb.DefaultPkReq_ID).ID))
 }
 
-func (Path) DelByids(ids []uint) errors.Error {
-	err := DB.Where("id in ?", ids).Delete(&model.RbacPath{}).Error
+func (dao Path) DelByids(ids []uint) errors.Error {
+	err := DB(dao.Ctx).Where("id in ?", ids).Delete(&model.RbacPath{}).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
@@ -158,15 +164,15 @@ func (Path) DelByids(ids []uint) errors.Error {
 	return nil
 }
 
-// func (Path) getPermissionByIDs(roleIDs ...uint) {
+// func (dao Path) getPermissionByIDs(roleIDs ...uint) {
 // 	var list []model.RbacPermissionPath
-// 	DB.Where("role_id=?", roleIDs).Find(&list)
+// 	DB(dao.Ctx).Where("role_id=?", roleIDs).Find(&list)
 
 // }
 
 //GetPathByUid 获取用户path
 func (dao Path) GetRolePath(pathType int8, roleIDs []int64) []model.RbacPath {
-	pids := Permission{}.getPermissionIDsByRoleIDs(roleIDs)
+	pids := NewPermission(dao.Ctx).getPermissionIDsByRoleIDs(roleIDs)
 	return dao.getPathByPIDs(pathType, pids...)
 
 }
@@ -177,8 +183,9 @@ func (dao Path) GetPathWithPermissionByUid(pathType int8, uid uint) []entity.Use
 	role := Role{}
 	roles := role.getRoleIdsByUID(uid)
 	r := helper.TransSliceType[uint, int64](roles)
-	pids := Permission{}.getPermissionIDsByRoleIDs(r)
-	permissionPathList := Permission{}.PermissionPathList(pids)
+	daoPermission := NewPermission(dao.Ctx)
+	pids := daoPermission.getPermissionIDsByRoleIDs(r)
+	permissionPathList := daoPermission.PermissionPathList(pids)
 	pathSet := set.NewSet[uint]()
 	permissionSet := set.NewSet[uint]()
 	for _, v := range permissionPathList {
@@ -190,8 +197,8 @@ func (dao Path) GetPathWithPermissionByUid(pathType int8, uid uint) []entity.Use
 		permissionSet.Add(v.PermissionID)
 		pathSet.Add(v.PathID)
 	}
-	pmap := Permission{}.permissionMap(DB, -1, 0, permissionSet.List()...)
-	pathList := Path{}.pathMap(DB, []string{"id", "name"}, pathSet.List()...)
+	pmap := daoPermission.permissionMap(DB(dao.Ctx), -1, 0, permissionSet.List()...)
+	pathList := NewPath(dao.Ctx).pathMap(DB(dao.Ctx), []string{"id", "name"}, pathSet.List()...)
 	for i, v := range resList {
 		resList[i].Path = pathList[v.PathID].Name
 		if v, ok := pmap[v.PID]; ok {
@@ -204,9 +211,9 @@ func (dao Path) GetPathWithPermissionByUid(pathType int8, uid uint) []entity.Use
 //GetPathByUid 获取用户path
 func (dao Path) GetPathActionsByRoles(pathType int8, roles []int64) map[string][]string {
 	var res = make(map[string][]string)
-
-	pids := Permission{}.getPermissionIDsByRoleIDs(roles)
-	permissionPathList := Permission{}.PermissionPathList(pids)
+	daoPermission := NewPermission(dao.Ctx)
+	pids := daoPermission.getPermissionIDsByRoleIDs(roles)
+	permissionPathList := daoPermission.PermissionPathList(pids)
 	pathSet := set.NewSet[uint]()
 	// permissionSet := set.NewSet[uint]()
 	for _, v := range permissionPathList {
@@ -214,8 +221,8 @@ func (dao Path) GetPathActionsByRoles(pathType int8, roles []int64) map[string][
 		// permissionSet.Add(v.PermissionID)
 		pathSet.Add(v.PathID)
 	}
-	// pmap := Permission{}.permissionMap(DB, -1, 0, permissionSet.List()...)
-	pathList := Path{}.list(DB, []string{"id", "method", "`key`", "api_path", "action"}, pathSet.List()...)
+	// pmap := Permission(dao.Ctx)permissionMap(DB, -1, 0, permissionSet.List()...)
+	pathList := NewPath(dao.Ctx).list(DB(dao.Ctx), []string{"id", "method", "`key`", "api_path", "action"}, pathSet.List()...)
 	for _, v := range pathList {
 		if v.Key == "" || v.Action == "" {
 			continue
@@ -227,7 +234,7 @@ func (dao Path) GetPathActionsByRoles(pathType int8, roles []int64) map[string][
 
 func (dao Path) getPathByPIDs(pathType int8, permissionIDs ...uint) []model.RbacPath {
 	var list []model.RbacPermissionPath
-	DB.Where("permission_id in ?", permissionIDs).Find(&list)
+	DB(dao.Ctx).Where("permission_id in ?", permissionIDs).Find(&list)
 	if len(list) == 0 {
 		return nil
 	}
@@ -235,7 +242,7 @@ func (dao Path) getPathByPIDs(pathType int8, permissionIDs ...uint) []model.Rbac
 	for _, v := range list {
 		uintSet.Add(v.PathID)
 	}
-	db := DB.Where("path_type=?", pathType).Order("sort asc").Debug()
+	db := DB(dao.Ctx).Where("path_type=?", pathType).Order("sort asc").Debug()
 
 	return dao.list(db, nil, uintSet.List()...)
 

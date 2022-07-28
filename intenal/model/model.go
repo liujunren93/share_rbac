@@ -3,8 +3,10 @@ package model
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/liujunren93/share_rbac/rbac_pb"
 	"github.com/liujunren93/share_utils/common/metadata"
 	"gorm.io/gorm"
 )
@@ -19,11 +21,25 @@ type Model struct {
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
-	PL        int            `gorm:"pl;type:int;not null;default:0;comment:'permisssion level 只能操作>=pl的数据'" json:"pl"`
+	PL        string         `gorm:"pl;type:varchar(20);not null;default:'';comment:'level_uid,权限锁管理员只能操作数据pl>管理员pl的数据 和自己锁上的数据'" json:"pl"`
 }
 
-func (m *Model) BeforeCreate(tx *gorm.DB) (err error) {
-	return m.checkPl(tx)
+var DataPermision = errors.New("no Data Permision")
+
+func (m *Model) getPL() (level, uid int) {
+	if len(m.PL) > 0 {
+		pl := strings.Split(m.PL, "_")
+		level, _ := strconv.Atoi(pl[0])
+		uid, _ := strconv.Atoi(pl[1])
+		return level, uid
+	}
+	return 0, 0
+}
+
+func modelInfo(tx *gorm.DB) Model {
+	var mode Model
+	tx.Table(tx.Statement.Table).Select("pl").First(&mode)
+	return mode
 }
 
 func (m *Model) BeforeUpdate(tx *gorm.DB) (err error) {
@@ -31,23 +47,33 @@ func (m *Model) BeforeUpdate(tx *gorm.DB) (err error) {
 }
 
 // 在同一个事务中更新数据
-func (m *Model) AfterDelete(tx *gorm.DB) (err error) {
+func (m *Model) BeforeDelete(tx *gorm.DB) (err error) {
 	return m.checkPl(tx)
 }
 
+// func (m *Model) AfterFind(tx *gorm.DB) (err error) {
+// 	var session rbac_pb.Session
+// 	err, ok := metadata.GetMessage(tx.Statement.Context, rbac_pb.SESSION_SHARE_RBAC_METADATA_KEY.String(), &session)
+
+// 	fmt.Printf("session:%+v", &session)
+// 	return
+// }
 func (m *Model) checkPl(tx *gorm.DB) error {
-	pl, ok := metadata.GetVal(tx.Statement.Context, "rbac_pl")
-	if ok {
-		return errors.New("no data permission")
+	var session rbac_pb.Session
+	model := modelInfo(tx)
+	if model.PL == "" {
+		return nil
 	}
-	plint, err := strconv.Atoi(pl)
-	if err != nil {
-		return err
+	err, ok := metadata.GetMessage(tx.Statement.Context, rbac_pb.SESSION_SHARE_RBAC_METADATA_KEY.String(), &session)
+	if err != nil || !ok {
+		return DataPermision
 	}
-	if m.PL < plint {
-		return errors.New("no data permission")
+	level, uid := model.getPL()
+	if int(session.UID) == uid || level > int(session.PL) {
+		return nil
 	}
-	return nil
+
+	return m.checkPl(tx)
 }
 
 type ModelSmp struct {
@@ -55,4 +81,5 @@ type ModelSmp struct {
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
+	PL        uint           `gorm:"pl;type:varchar(20);not null;default:'';comment:'permission level'" json:"pl"`
 }

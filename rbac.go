@@ -6,6 +6,7 @@ import (
 	"github.com/liujunren93/share_rbac/log"
 	pb "github.com/liujunren93/share_rbac/rbac_pb"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/gin-gonic/gin"
 	"github.com/liujunren93/share/client"
@@ -44,28 +45,31 @@ func (r *Rbac) UpAuther(auther auth.Auther) {
 
 	middleware.UpdateAuther(auther)
 }
-func session(ctx context.Context) string {
+func session(ctx context.Context) (proto.Message, error) {
 	if ctx, ok := ctx.(*gin.Context); ok {
 		domainId := ctx.GetInt64(pb.SESSION_SHARE_RBAC_DOMAIN_ID.String())
 		uid := ctx.GetInt64(pb.SESSION_SHARE_RBAC_UID.String())
+		pl := ctx.GetInt64(pb.SESSION_SHARE_RBAC_PL.String())
 		roleIDs, ok := ctx.Get(pb.SESSION_SHARE_RBAC_ROLE_IDS.String())
 		session := pb.Session{
 			UID:      uid,
 			DomainID: domainId,
+			PL:       pl,
 		}
 		if ok {
 			session.RoleIDs = roleIDs.([]int64)
 		}
-		return session.String()
+		return &session, nil
+
 	} else {
-		return ""
+		return nil, nil
 	}
 
 }
 func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther auth.Auther, cli *client.Client, namespace, serverName string) (unLogin, Login router.Router, err error) {
 
 	r.auther = auther
-	cli.AddOptions(client.WithCallWrappers(metadata.NewClientWrapper(pb.SESSION_SHARE_RBAC_METADATA_KEY.String(), session)))
+	cli.AddOptions(client.WithCallWrappers(metadata.NewClientWrapperMessage(pb.SESSION_SHARE_RBAC_METADATA_KEY.String(), session)))
 	if namespace != "" {
 		cli.AddOptions(client.WithNamespace(namespace))
 	}

@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"context"
+
 	"github.com/liujunren93/share_rbac/intenal/entity"
 	"github.com/liujunren93/share_rbac/intenal/model"
 	"github.com/liujunren93/share_rbac/log"
@@ -18,10 +20,15 @@ import (
  */
 
 type Role struct {
+	dao
 }
 
-func (r Role) List(req *pb.RoleListReq) (res entity.RoleListRes) {
-	db := DB.Where("domain_id=?", req.DomainID)
+func NewRole(ctx context.Context) Role {
+	return Role{dao: dao{ctx}}
+}
+
+func (dao Role) List(req *pb.RoleListReq) (res entity.RoleListRes) {
+	db := DB(dao.Ctx).Where("domain_id=?", req.DomainID)
 	if req.Name != "" {
 		db = db.Where("name like ?", "%"+req.Name+"%")
 	}
@@ -33,7 +40,7 @@ func (r Role) List(req *pb.RoleListReq) (res entity.RoleListRes) {
 	return
 }
 
-func (Role) list(db *gorm.DB, domainId int64, name string, ids []uint) []model.RbacRole {
+func (dao Role) list(db *gorm.DB, domainId int64, name string, ids []uint) []model.RbacRole {
 	var list []model.RbacRole
 	db = db.Where("domain_id=?", domainId)
 	if ids != nil {
@@ -52,7 +59,7 @@ func (dao Role) Create(req *pb.RoleCreateReq) errors.Error {
 		Name:     req.Name,
 		Desc:     req.Desc,
 	}
-	err := dao.create(DB, &role)
+	err := dao.create(DB(dao.Ctx), &role)
 	if err != nil {
 		return err
 	}
@@ -60,12 +67,12 @@ func (dao Role) Create(req *pb.RoleCreateReq) errors.Error {
 
 }
 
-func (Role) create(tx *gorm.DB, role *model.RbacRole) errors.Error {
-	first := DB.Where("domain_id=? and  name=?", role.DomainID, role.Name).First(&model.RbacRole{})
+func (dao Role) create(tx *gorm.DB, role *model.RbacRole) errors.Error {
+	first := DB(dao.Ctx).Where("domain_id=? and  name=?", role.DomainID, role.Name).First(&model.RbacRole{})
 	if first.RowsAffected > 0 {
 		return errors.NewDBDuplication("角色名已存在")
 	}
-	err := DB.Create(role).Error
+	err := DB(dao.Ctx).Create(role).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
@@ -74,35 +81,35 @@ func (Role) create(tx *gorm.DB, role *model.RbacRole) errors.Error {
 
 }
 
-func (Role) Info(req *pb.DefaultPkReq) model.RbacRole {
+func (dao Role) Info(req *pb.DefaultPkReq) model.RbacRole {
 	var info model.RbacRole
-	DB.Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).First(&info)
+	DB(dao.Ctx).Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).First(&info)
 	return info
 }
 
-func (Role) Update(req *pb.RoleUpdateReq) errors.Error {
+func (dao Role) Update(req *pb.RoleUpdateReq) errors.Error {
 	var info model.RbacRole
-	first := DB.Where("domain_id=? and id!=? and name=?", req.DomainID, req.ID, req.Name).First(&info)
+	first := DB(dao.Ctx).Where("domain_id=? and id!=? and name=?", req.DomainID, req.ID, req.Name).First(&info)
 	if first.RowsAffected > 0 {
 		return errors.NewDBDuplication("account")
 	}
 	snake := helper.Struct2MapSnakeNoZero(req)
 	delete(snake, "id")
-	err := DB.Where("id=? and domain_id=?", req.ID, req.DomainID).Model(&model.RbacRole{}).Updates(snake).Error
+	err := DB(dao.Ctx).Where("id=? and domain_id=?", req.ID, req.DomainID).Model(&model.RbacRole{}).Updates(snake).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
 	return nil
 }
-func (Role) Del(id, domainId int64) errors.Error {
+func (dao Role) Del(id, domainId int64) errors.Error {
 
-	err := DB.Where("id=? and domain_id=?", id, domainId).Delete(&model.RbacRole{}).Error
+	err := DB(dao.Ctx).Where("id=? and domain_id=?", id, domainId).Delete(&model.RbacRole{}).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
-	err = DB.Where("role_id=? and domain_id=?", id, domainId).Delete(&model.RbacRoleUser{}).Error
+	err = DB(dao.Ctx).Where("role_id=? and domain_id=?", id, domainId).Delete(&model.RbacRoleUser{}).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
@@ -110,10 +117,10 @@ func (Role) Del(id, domainId int64) errors.Error {
 	return nil
 }
 
-func (Role) RolePermissionList(req *pb.RolePermissionListReq) []model.RbacPermission {
+func (dao Role) RolePermissionList(req *pb.RolePermissionListReq) []model.RbacPermission {
 	var list []model.RbacRolePermission
 
-	DB.Where("domain_id=? and role_id=?", req.DomainID, req.RoleID).Find(&list)
+	DB(dao.Ctx).Where("domain_id=? and role_id=?", req.DomainID, req.RoleID).Find(&list)
 	uintSet := set.NewSet[uint]()
 	for _, permission := range list {
 		uintSet.Add(permission.PermissionID)
@@ -121,24 +128,24 @@ func (Role) RolePermissionList(req *pb.RolePermissionListReq) []model.RbacPermis
 	if uintSet.Len() == 0 {
 		return nil
 	}
-	return Permission{}.list(DB, -1, 0, uintSet.List()...)
+	return NewPermission(dao.Ctx).list(DB(dao.Ctx), -1, 0, uintSet.List()...)
 
 }
-func (Role) rolePermission(domainId int64, roleId []uint) []model.RbacRolePermission {
+func (dao Role) rolePermission(domainId int64, roleId []uint) []model.RbacRolePermission {
 	var list []model.RbacRolePermission
-	DB.Where("domain_id=? and role_id in ?", domainId, roleId).Find(&list)
+	DB(dao.Ctx).Where("domain_id=? and role_id in ?", domainId, roleId).Find(&list)
 	return list
 }
 
 func (dao Role) RolePermissionSet(req *pb.RolePermissionSetReq) errors.Error {
-	err := dao.rolePermissionSet(DB, uint(req.RoleID), uint(req.DomainID), helper.TransSliceType[int64, uint](req.PermissionIDS)...)
+	err := dao.rolePermissionSet(DB(dao.Ctx), uint(req.RoleID), uint(req.DomainID), helper.TransSliceType[int64, uint](req.PermissionIDS)...)
 	if err != nil {
 		log.Logger.Error("Role.RolePermissionSet", err)
 	}
 	return err
 }
 
-func (Role) rolePermissionSet(tx *gorm.DB, roleId, domainId uint, permissionIDS ...uint) errors.Error {
+func (dao Role) rolePermissionSet(tx *gorm.DB, roleId, domainId uint, permissionIDS ...uint) errors.Error {
 	log.Logger.Debug("rolePermissionSet")
 	var err error
 	if len(permissionIDS) == 0 {
@@ -179,10 +186,10 @@ func (Role) rolePermissionSet(tx *gorm.DB, roleId, domainId uint, permissionIDS 
 	return nil
 }
 
-func (Role) getRoleIdsByUID(uid uint) []uint {
+func (dao Role) getRoleIdsByUID(uid uint) []uint {
 	var list []model.RbacRoleUser
 
-	DB.Where("uid=?", uid).Find(&list)
+	DB(dao.Ctx).Where("uid=?", uid).Find(&list)
 	uintSet := set.NewSet[uint]()
 	for _, user := range list {
 		uintSet.Add(user.RoleID)
@@ -190,15 +197,15 @@ func (Role) getRoleIdsByUID(uid uint) []uint {
 	return uintSet.List()
 }
 
-func (r Role) GetDomainPolicy(domainId int64) []entity.DomainPolicy {
-	roleList := r.list(DB, domainId, "", nil)
+func (dao Role) GetDomainPolicy(domainId int64) []entity.DomainPolicy {
+	roleList := dao.list(DB(dao.Ctx), domainId, "", nil)
 	rset := set.NewSet[uint]()
 	for _, v := range roleList {
 		rset.Add(v.ID)
 	}
 	var list []entity.DomainPolicy
 	var pSet = set.NewSet[uint]()
-	rolePermissionList := r.rolePermission(domainId, rset.List())
+	rolePermissionList := dao.rolePermission(domainId, rset.List())
 	for _, v := range rolePermissionList {
 		pSet.Add(v.PermissionID)
 		list = append(list, entity.DomainPolicy{
@@ -209,7 +216,7 @@ func (r Role) GetDomainPolicy(domainId int64) []entity.DomainPolicy {
 		})
 	}
 	var pathSet = set.NewSet[uint]()
-	permissionPath := Permission{}.PermissionPathMap(pSet.List())
+	permissionPath := NewPermission(dao.Ctx).PermissionPathMap(pSet.List())
 	for _, paths := range permissionPath {
 		pathSet.Add(paths...)
 	}
@@ -231,10 +238,8 @@ func (r Role) GetDomainPolicy(domainId int64) []entity.DomainPolicy {
 
 	}
 
-	pathMap := Path{}.pathMap(DB, []string{"id", "api_path", "method"}, pathSet.List()...)
-
+	pathMap := NewPath(dao.Ctx).pathMap(DB(dao.Ctx), []string{"id", "api_path", "method"}, pathSet.List()...)
 	j := 0
-
 	for _, v := range resList {
 		if p, ok := pathMap[v.PathID]; ok {
 			if p.ApiPath == "" || p.Method == "" {

@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"context"
+
 	"github.com/liujunren93/share_rbac/intenal/entity"
 	"github.com/liujunren93/share_rbac/intenal/model"
 	"github.com/liujunren93/share_rbac/log"
@@ -15,11 +17,16 @@ import (
 * @Date: 2022/3/24 11:58
  */
 type Domain struct {
+	dao
 }
 
-func (Domain) List(req *pb.DomainListReq) entity.DomainListRes {
+func NewDomain(ctx context.Context) Domain {
+	return Domain{dao{ctx}}
+}
+
+func (dao Domain) List(req *pb.DomainListReq) entity.DomainListRes {
 	var res entity.DomainListRes
-	db := DB
+	db := DB(dao.Ctx)
 	if req.Name != "" {
 		db = db.Where("name like ?", "%"+req.Name+"%")
 	}
@@ -43,9 +50,9 @@ func (dao Domain) Info(req *pb.DefaultPkReq) model.RbacDomain {
 	return info
 }
 
-func (Domain) info(id int64) model.RbacDomain {
+func (dao Domain) info(id int64) model.RbacDomain {
 	var info model.RbacDomain
-	DB.Where("id = ?", id).First(&info)
+	DB(dao.Ctx).Where("id = ?", id).First(&info)
 	return info
 }
 
@@ -55,14 +62,14 @@ func (dao Domain) Create(req *pb.DomainCreateReq) errors.Error {
 		Domain: req.Domain,
 		Status: int8(req.Status),
 	}
-	err := dao.create(DB, &domain)
+	err := dao.create(DB(dao.Ctx), &domain)
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
 	return nil
 }
-func (Domain) create(tx *gorm.DB, domain *model.RbacDomain) error {
+func (dao Domain) create(tx *gorm.DB, domain *model.RbacDomain) error {
 	err := tx.Create(domain).Error
 	if err != nil {
 		return err
@@ -70,10 +77,10 @@ func (Domain) create(tx *gorm.DB, domain *model.RbacDomain) error {
 	return nil
 }
 
-func (Domain) Update(req *pb.DomainUpdateReq) errors.Error {
+func (dao Domain) Update(req *pb.DomainUpdateReq) errors.Error {
 	zero := helper.Struct2MapSnakeNoZero(req)
 	delete(zero, "id")
-	err := DB.Where("id=?", req.ID).Model(&model.RbacDomain{}).Updates(zero).Error
+	err := DB(dao.Ctx).Where("id=?", req.ID).Model(&model.RbacDomain{}).Updates(zero).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
@@ -81,9 +88,9 @@ func (Domain) Update(req *pb.DomainUpdateReq) errors.Error {
 	return nil
 }
 
-func (Domain) Del(req *pb.DefaultPkReq) errors.Error {
+func (dao Domain) Del(req *pb.DefaultPkReq) errors.Error {
 
-	err := DB.Where("id=?", req.Pk.(*pb.DefaultPkReq_ID).ID).Delete(&model.RbacDomain{}).Error
+	err := DB(dao.Ctx).Where("id=?", req.Pk.(*pb.DefaultPkReq_ID).ID).Delete(&model.RbacDomain{}).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)

@@ -27,6 +27,9 @@ func Session(ctx *gin.Context) {
 		if domain, ok := data[ctrl.DOMIAN_ID]; ok {
 			ctx.Set(ctrl.DOMIAN_ID, int64(domain.(float64)))
 		}
+		if pl, ok := data[ctrl.PL]; ok {
+			ctx.Set(ctrl.PL, pl.(float64))
+		}
 		if roles, ok := data[ctrl.ROLES]; ok {
 			if roles != nil {
 				da, err := helper.InterfaceSlice2NumberSlice[float64](roles.([]interface{}))

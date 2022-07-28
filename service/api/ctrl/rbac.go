@@ -126,12 +126,12 @@ func (ctrl *rbacCtrl) userPolicy(uid, domainId int64, roleIds []int64) error {
 func (ctrl *rbacCtrl) CheckPermission(ctx context.Context, reqPath, method string, roleIds []int64, uid, domainId int64) error {
 	err := ctrl.domainPolicy(ctx, domainId)
 	if err != nil {
-		log.Logger.Debug("CheckPermission.domainPolicy", err)
+		log.Logger.Error("CheckPermission.domainPolicy", err)
 		return err
 	}
 	err = ctrl.userPolicy(uid, domainId, roleIds)
 	if err != nil {
-		log.Logger.Debug("CheckPermission.userPolicy", err)
+		log.Logger.Error("CheckPermission.userPolicy", err)
 		return err
 	}
 

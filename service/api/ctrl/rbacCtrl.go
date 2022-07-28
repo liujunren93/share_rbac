@@ -34,6 +34,7 @@ var (
 	DOMIAN_ID = pb.SESSION_SHARE_RBAC_DOMAIN_ID.String() //int64
 	UID       = pb.SESSION_SHARE_RBAC_UID.String()
 	ROLES     = pb.SESSION_SHARE_RBAC_ROLE_IDS.String() //[]int64
+	PL        = pb.SESSION_SHARE_RBAC_PL.String()
 )
 
 var (
@@ -446,6 +447,7 @@ func (ctrl *rbacCtrl) Login(ctx *gin.Context) {
 	ctrl.Auther.SetData(UID, res.Data.UID)
 	ctrl.Auther.SetData(DOMIAN_ID, res.Data.DomainID)
 	ctrl.Auther.SetData(ROLES, res.Data.RoleIDs)
+	ctrl.Auther.SetData(PL, res.Data.PL)
 
 	t, err := ctrl.Auther.Token("")
 	netHelper.Response(ctx, nil, err, map[string]interface{}{"token": t, "user_info": res.Data})
