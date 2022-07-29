@@ -10,6 +10,7 @@ import (
 	"github.com/liujunren93/share_rbac/rbac_pb"
 	"github.com/liujunren93/share_utils/common/metadata"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 /**
@@ -39,14 +40,40 @@ func (m *Model) getPL() (level, uid int) {
 
 func modelInfo(tx *gorm.DB) Model {
 	var mode Model
-	err := tx.Table(tx.Statement.Table).Select("pl").First(&mode).Error
+	// buf := clause.Builder{}
+	// for range s.Clauses {}
+	var wheres []clause.Expr
+	var ors []clause.Expr
+	for _, c := range tx.Statement.Clauses["WHERE"].Expression.(clause.Where).Exprs {
 
+		if exp, ok := c.(clause.Expr); ok {
+			wheres = append(wheres, exp)
+
+		}
+		if or, ok := c.(clause.OrConditions); ok {
+			for _, oc := range or.Exprs {
+				if exp, ok := oc.(clause.Expr); ok {
+					ors = append(ors, exp)
+				}
+			}
+
+		}
+	}
+
+	tx = tx.Select("pl").Table(tx.Statement.Table)
+	for _, where := range wheres {
+		tx = tx.Where(where.SQL, where.Vars...)
+	}
+	for _, or := range ors {
+		tx = tx.Or(or.SQL, or.Vars...)
+	}
+	err := tx.First(&mode).Error
 	fmt.Println(err)
 	return mode
 }
 
 func (m *Model) BeforeUpdate(tx *gorm.DB) (err error) {
-	return nil
+
 	return m.checkPl(tx)
 }
 
