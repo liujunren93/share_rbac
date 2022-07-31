@@ -110,7 +110,9 @@ func (dao Permission) Update(req *pb.PermissionUpdateReq) errors.Error {
 		return errors.NewDBNoData("")
 	}
 	snake := helper.Struct2MapSnakeNoZero(req)
-	delete(snake, "id")
+	if req.IsLock {
+		snake["pl"] = dao.NewPL()
+	}
 	err := DB(dao.Ctx).Model(&model.RbacPermission{}).Where("id=? and domain_id=?", req.ID, req.DomainID).Updates(snake).Error
 	if err != nil {
 		log.Logger.Error(err)

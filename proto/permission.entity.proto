@@ -29,11 +29,13 @@ message PermissionCreateReq{
   int64 DomainID=3; 
   // @gotags: json:"status" 
   int64 Status=4;
+    // @gotags: json:"is_lock"
+    bool IsLock=5;
 
 }
 
 message PermissionUpdateReq{
-  // @gotags: json:"id" binding:"required"
+  // @gotags: json:"id" binding:"required" gorm:"-"
   int64 ID = 1;
   // @gotags: json:"name" binding:"required"
   string Name = 2 ;
@@ -43,7 +45,8 @@ message PermissionUpdateReq{
   int64 DomainID=4;
   // @gotags: json:"status" 
  int64 Status=5;
-
+  // @gotags: json:"is_lock" gorm:"-"
+  bool IsLock=6;
 }
 
 message PermissionDelReq{

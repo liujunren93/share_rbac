@@ -6,7 +6,7 @@ package model
  */
 
 type RbacPath struct {
-	Model
+	ModelPL
 	Key       string `gorm:"key;type:varchar(100);not null;default:'';comment:'前端权限组'" json:"key,omitempty"`
 	Name      string `gorm:"name;type:varchar(100);not null;default:'';comment:'name'" json:"name,omitempty"`
 	Action    string `gorm:"action;type:varchar(100);not null;default:'';comment:'方法:前端权限标识'" json:"action,omitempty"`
@@ -24,7 +24,7 @@ type RbacPath struct {
 }
 
 type RbacPermission struct {
-	Model
+	ModelPL
 	// Type     int8   `gorm:"domain_id;type:tinyint(1);not null;default:1;comment:'1:普通权限,2:action;3:action+普通权限'" json:"-"`
 	DomainID int    `gorm:"domain_id;index;type:int;not null;default:0;comment:'-1:基础权限，所有域通用'" json:"-"`
 	Name     string `gorm:"name;type:varchar(100);not null;default:'';comment:'name'" json:"name"`
@@ -33,7 +33,7 @@ type RbacPermission struct {
 }
 
 type RbacPermissionPath struct {
-	Model
+	ModelPL
 	DomainID     int  `gorm:"domain_id;type:int;not null;default:0;comment:'domain_id'"`
 	PermissionID uint `gorm:"permission_id;type:int;not null;default:0;comment:'permission_id'"`
 	PathID       uint `gorm:"path_id;type:int;not null;default:0;comment:'path_id'"`

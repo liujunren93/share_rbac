@@ -94,7 +94,9 @@ func (dao Role) Update(req *pb.RoleUpdateReq) errors.Error {
 		return errors.NewDBDuplication("account")
 	}
 	snake := helper.Struct2MapSnakeNoZero(req)
-	delete(snake, "id")
+	if req.IsLock {
+		snake["pl"] = dao.NewPL()
+	}
 	err := DB(dao.Ctx).Where("id=? and domain_id=?", req.ID, req.DomainID).Model(&model.RbacRole{}).Updates(snake).Error
 	if err != nil {
 		log.Logger.Error(err)

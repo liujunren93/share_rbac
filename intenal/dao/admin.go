@@ -229,6 +229,7 @@ func (dao Admin) AdminInfo(req *pb.DefaultPkReq) *pb.LoginResData {
 	ra := dao.Info(req)
 	u := NewRole(dao.Ctx).getRoleIdsByUID(ra.ID)
 	res.Name = ra.Name
+	res.PL = int64(ra.PL)
 	res.UID = int64(ra.ID)
 	res.RoleIDs = helper.TransSliceType[uint, int64](u)
 	return &res

@@ -128,16 +128,16 @@ func (dao Path) Info(req *pb.DefaultPkReq) model.RbacPath {
 }
 
 func (dao Path) Update(req *pb.PathUpdateReq) errors.Error {
-	var info model.RbacAdmin
+	var info model.RbacPath
 	first := DB(dao.Ctx).Where("id!=? and name=?", req.ID, req.Name).First(&info)
 	if first.RowsAffected > 0 {
 		return errors.NewDBDuplication("account")
 	}
 
 	snake := helper.Struct2MapSnake(req)
-	// if req.IsLock {
-	// 	snake["pl"] = dao.NewPL()
-	// }
+	if req.IsLock {
+		snake["pl"] = dao.NewPL()
+	}
 	if req.Meta != nil {
 		b, _ := json.Marshal(&req.Meta)
 		snake["meta"] = string(b)
@@ -147,7 +147,9 @@ func (dao Path) Update(req *pb.PathUpdateReq) errors.Error {
 
 	err := DB(dao.Ctx).Where("id=? ", req.ID).Model(&model.RbacPath{}).Updates(snake).Error
 	if err != nil {
+
 		log.Logger.Error(err)
+
 		return errors.NewDBInternal(err)
 	}
 	return nil

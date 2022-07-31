@@ -17,6 +17,7 @@ message RoleListReq {
     string SortField=6;
   // @gotags: form:"sort_order" binding:"oneof='' asc desc,required_with=SortField"
   string SortOrder=7;
+  
 }
 message RoleCreateReq{
   // @gotags: json:"name" binding:"required"
@@ -25,10 +26,12 @@ message RoleCreateReq{
   string  Desc = 2;
   // @gotags: json:"domain_id"
   int64 DomainID=3;
+  // @gotags: json:"is_lock"
+  bool IsLock=15;
 }
 
 message RoleUpdateReq{
-  // @gotags: json:"id" binding:"required"
+  // @gotags: json:"id" binding:"required" gorm:"-"
   int64 ID = 1;
   // @gotags: json:"name" binding:"required"
   string Name = 2 ;
@@ -36,6 +39,8 @@ message RoleUpdateReq{
   string  Desc = 3;
   // @gotags: json:"domain_id"  
   int64 DomainID=4;
+  // @gotags: json:"is_lock" gorm:"-"
+  bool IsLock=15;
 }
 
 message RoleDelReq{

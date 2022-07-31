@@ -1,14 +1,13 @@
 package model
 
 import (
-	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/liujunren93/share_rbac/rbac_pb"
 	"github.com/liujunren93/share_utils/common/metadata"
+	shErr "github.com/liujunren93/share_utils/errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -17,7 +16,7 @@ import (
 * @Author: liujunren
 * @Date: 2022/2/28 10:12
  */
-type Model struct {
+type ModelPL struct {
 	ID        uint           `gorm:"primarykey" json:"id"`
 	DomainID  uint           `gorm:"domain;type:int;not null;default:0;comment:''" json:"domain_id"`
 	CreatedAt time.Time      `json:"created_at"`
@@ -26,11 +25,12 @@ type Model struct {
 	PL        string         `gorm:"pl;type:varchar(20);not null;default:'';comment:'level_uid,权限锁管理员只能操作数据pl>管理员pl的数据 和自己锁上的数据'" json:"pl"`
 }
 
-var DataPermision = errors.New("no Data Permision")
-
-func (m *Model) getPL() (level, uid int) {
+func (m *ModelPL) getPL() (level, uid int) {
 	if len(m.PL) > 0 {
 		pl := strings.Split(m.PL, "_")
+		if len(pl) != 2 {
+			return 0, 0
+		}
 		level, _ := strconv.Atoi(pl[0])
 		uid, _ := strconv.Atoi(pl[1])
 		return level, uid
@@ -38,8 +38,8 @@ func (m *Model) getPL() (level, uid int) {
 	return 0, 0
 }
 
-func modelInfo(tx *gorm.DB) Model {
-	var mode Model
+func modelInfo(tx *gorm.DB) ModelPL {
+	var mode ModelPL
 	// buf := clause.Builder{}
 	// for range s.Clauses {}
 	var wheres []clause.Expr
@@ -60,25 +60,26 @@ func modelInfo(tx *gorm.DB) Model {
 		}
 	}
 
-	tx = tx.Select("pl").Table(tx.Statement.Table)
+	tx = tx.Select("id,pl").Table(tx.Statement.Table).Where("pl!=''")
 	for _, where := range wheres {
 		tx = tx.Where(where.SQL, where.Vars...)
 	}
+
 	for _, or := range ors {
 		tx = tx.Or(or.SQL, or.Vars...)
 	}
-	err := tx.First(&mode).Error
-	fmt.Println(err)
+	tx.First(&mode)
+
 	return mode
 }
 
-func (m *Model) BeforeUpdate(tx *gorm.DB) (err error) {
+func (m *ModelPL) BeforeUpdate(tx *gorm.DB) (err error) {
 
 	return m.checkPl(tx)
 }
 
 // 在同一个事务中更新数据
-func (m *Model) BeforeDelete(tx *gorm.DB) (err error) {
+func (m *ModelPL) BeforeDelete(tx *gorm.DB) (err error) {
 	return m.checkPl(tx)
 }
 
@@ -89,7 +90,7 @@ func (m *Model) BeforeDelete(tx *gorm.DB) (err error) {
 // 	fmt.Printf("session:%+v", &session)
 // 	return
 // }
-func (m *Model) checkPl(tx *gorm.DB) error {
+func (m *ModelPL) checkPl(tx *gorm.DB) error {
 	var session rbac_pb.Session
 	model := modelInfo(tx)
 	if model.PL == "" {
@@ -97,14 +98,14 @@ func (m *Model) checkPl(tx *gorm.DB) error {
 	}
 	err, ok := metadata.GetMessage(tx.Statement.Context, rbac_pb.SESSION_SHARE_RBAC_METADATA_KEY.String(), &session)
 	if err != nil || !ok {
-		return DataPermision
+		return shErr.New(shErr.StatusDBPermissionDenied, "permission denied")
 	}
 	level, uid := model.getPL()
-	if int(session.UID) == uid || level > int(session.PL) {
+	if int(session.UID) == uid || int(session.PL) < level {
 		return nil
 	}
 
-	return nil
+	return shErr.NewPublic(shErr.StatusDBPermissionDenied, "permission denied")
 }
 
 type ModelSmp struct {

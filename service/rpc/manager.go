@@ -201,7 +201,7 @@ func (r *Rbac) MPathCreate(ctx context.Context, req *pb.PathCreateReq) (*pb.Defa
 }
 
 func (r *Rbac) MPathUpdate(ctx context.Context, req *pb.PathUpdateReq) (*pb.DefaultRes, error) {
-	err := dao.NewPath(context.TODO()).Update(req)
+	err := dao.NewPath(ctx).Update(req)
 	var res pb.DefaultRes
 	r.Publish(ctx, REDISKEY_MQ_DOMAIN_PERSMISSION, req.DomainID)
 	return &res, netHelper.RpcResponse(&res, err, nil)

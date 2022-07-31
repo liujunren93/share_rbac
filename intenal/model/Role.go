@@ -6,7 +6,7 @@ package model
  */
 
 type RbacRole struct {
-	Model
+	ModelPL
 	DomainID uint   `gorm:"domain_id;type:int;not null;default:0;comment:'domain_id'"`
 	Name     string `gorm:"name;type:varchar(100);not null;default:'';comment:'name'" json:"name"`
 	Desc     string `gorm:"desc;type:varchar(100);not null;default:'';comment:'desc'" json:"desc"`
@@ -14,14 +14,14 @@ type RbacRole struct {
 }
 
 type RbacRoleUser struct {
-	Model
+	ModelPL
 	DomainID uint `gorm:"domain_id;type:int;not null;default:0;comment:'domain_id'" json:"domain_id"`
 	RoleID   uint `gorm:"role_id;type:int;not null;default:0;comment:'role_id'" json:"role_id"`
 	UID      uint `gorm:"uid;type:int;not null;default:0;comment:'uid'" `
 }
 
 type RbacRolePermission struct {
-	Model
+	ModelPL
 	DomainID     uint `gorm:"domain_id;type:int;not null;default:0;comment:'domain_id'"`
 	RoleID       uint `gorm:"role_id;type:int;not null;default:0;comment:'role_id'"`
 	PermissionID uint `gorm:"permission_id;type:int;not null;default:0;comment:'permission_id'"`
