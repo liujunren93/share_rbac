@@ -174,6 +174,7 @@ func (dao Admin) Registry(req *pb.RegistryReq) (Err errors.Error) {
 		Password: password,
 		Status:   0,
 	}
+	admin.PL = 5000
 	err = tx.Create(&admin).Error
 	if err != nil {
 		log.Logger.Error(err)
