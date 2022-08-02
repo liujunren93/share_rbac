@@ -133,7 +133,6 @@ func (r *Rbac) initRbacRoute(engine *gin.Engine) (unLogin, login router.Router, 
 
 	{
 		domian.GET("", rbac.DomainList)
-		domian.POST("", rbac.DomainCreate)
 		domian.PUT("/:id", rbac.DomainUpdate)
 		domian.DELETE("/:id", rbac.DomainDel)
 		domian.GET("/:id", rbac.DomainInfo)

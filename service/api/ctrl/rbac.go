@@ -72,7 +72,7 @@ func (ctrl *rbacCtrl) domainPolicy(ctx context.Context, domainId int64) error {
 		if err := ctrl.initCasPolicy(); err != nil {
 			return err
 		}
-		req := pb.GetDomainPolicyReq{DomainID: domainId}
+		req := pb.GetDomainPolicyReq{}
 		dr, err := ctrl.grpcClient.GetDomainPolicy(ctx, &req)
 		if err != nil {
 			log.Logger.Error("domainPolicy.GetDomainPolicy", err)

@@ -18,13 +18,13 @@ message AdminCreateReq {
 }
 
 message AdminUpdateReq {
-  // @gotags: json:"id" binding:"required"
+  // @gotags: json:"id" binding:"required" gorm:"-"
   int64 ID = 1;
   // @gotags: json:"name"
   string Name = 2;
   // @gotags: json:"password"
   string Password = 3;
-  // @gotags: json:"domain_id" 
+  // @gotags: json:"domain_id"  gorm:"-"
   int64 DomainID=4;
   // @gotags: json:"status"
   int64 Status=5;
@@ -116,12 +116,10 @@ message AdminRoleListReq {
 
 
 message AdminRoleSetReq {
-  // @gotags: json:"domain_id" 
-  int64 DomainID=1;
   // @gotags: json:"role_ids" 
-  repeated int64 RoleIDs = 2;
+  repeated int64 RoleIDs = 1;
   // @gotags: json:"uid" 
-  int64 UID =3;
+  int64 UID =2;
 
 }
 

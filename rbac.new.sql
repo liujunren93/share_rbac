@@ -11,7 +11,7 @@
  Target Server Version : 80022
  File Encoding         : 65001
 
- Date: 02/08/2022 10:53:20
+ Date: 02/08/2022 15:32:51
 */
 
 SET NAMES utf8mb4;
@@ -62,8 +62,8 @@ CREATE TABLE `rbac_admin`  (
 -- ----------------------------
 -- Records of rbac_admin
 -- ----------------------------
-INSERT INTO `rbac_admin` VALUES (1, 1, '2022-04-16 21:09:58', '2022-06-09 01:56:25', NULL, 'admin', 'admin', '$2a$10$RffF0Kfl3is4NUw6/qUcQOXnbgF0LpNwGuG1AASMyH1B5yWSff2iC', 1, 1);
-INSERT INTO `rbac_admin` VALUES (2, 1, '2022-06-06 01:11:54', '2022-08-02 09:44:36', NULL, 'test', 'qqq', '$2a$10$U8sOi/9sv9hPHRhm4KT9Rujz.erj3HVfE4iuzJyE7lTshRP.39BQG', 1, 2);
+INSERT INTO `rbac_admin` VALUES (1, 1, '2022-04-16 21:09:58', '2022-08-02 14:28:08', NULL, 'admin', 'admin', '$2a$10$viSK8m57ZvitkXSmVnG8xeggv7g5kt49sfjg73p1NXxkvz9Zcb0gW', 1, 1);
+INSERT INTO `rbac_admin` VALUES (2, 1, '2022-06-06 01:11:54', '2022-08-02 14:24:45', NULL, 'test', 'qqq', '$2a$10$8CbKPZeYQvE.MYidauD/EOxIJliEaV7ILCobPK2stH0o9iQmrn4v2', 1, 2);
 
 -- ----------------------------
 -- Table structure for rbac_domain

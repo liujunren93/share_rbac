@@ -31,7 +31,8 @@ func NewAdmin(ctx context.Context) Admin {
 }
 
 func (dao Admin) List(req *pb.AdminListReq) (res entity.AdminListRes) {
-	db := DB(dao.Ctx).Where("domain_id=?", req.DomainID)
+
+	db := DB(dao.Ctx).Where("domain_id=? and pl>?", dao.GetSession().DomainID, dao.GetSession().PL)
 	if req.Name != "" {
 		db = db.Where("name like ?", "%"+req.Name+"%")
 	}
@@ -51,9 +52,9 @@ func (dao Admin) List(req *pb.AdminListReq) (res entity.AdminListRes) {
 }
 
 func (dao Admin) Create(req *pb.AdminCreateReq) errors.Error {
-	first := DB(dao.Ctx).Where("domain_id=? and account=?", req.DomainID, req.Account).First(&model.RbacAdmin{})
+	first := DB(dao.Ctx).Where("account=?", req.Account).First(&model.RbacAdmin{})
 	if first.RowsAffected > 0 {
-		return errors.NewDBDuplication("account")
+		return errors.NewDBDuplication("账号已存在")
 	}
 	password, err := helper.NewPassword(req.Account, req.Password, 10)
 	if err != nil {
@@ -62,7 +63,7 @@ func (dao Admin) Create(req *pb.AdminCreateReq) errors.Error {
 	}
 
 	err = DB(dao.Ctx).Create(&model.RbacAdmin{
-		DomainID: uint(req.DomainID),
+		DomainID: uint(dao.GetSession().DomainID),
 		Account:  req.Account,
 		Name:     req.Name,
 		Password: password,
@@ -82,18 +83,18 @@ func (dao Admin) Info(req *pb.DefaultPkReq, fields ...string) model.RbacAdmin {
 	if len(fields) != 0 {
 		db = db.Select(strings.Join(fields, ","))
 	}
-	db.Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).First(&info)
+	db.Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, dao.GetSession().DomainID).First(&info)
 	return info
 }
 
 func (dao Admin) Update(req *pb.AdminUpdateReq) errors.Error {
 	var info model.RbacAdmin
-	first := DB(dao.Ctx).Where("id=? and domain_id=? ", req.ID, req.DomainID).First(&info)
+	first := DB(dao.Ctx).Where("id=? and domain_id=? ", req.ID, dao.GetSession().DomainID).First(&info)
 	if first.RowsAffected == 0 {
 		return errors.NewDBNoData("")
 	}
 	if req.Password != "" {
-		password, err := helper.NewPassword(info.Account, req.Password, 10)
+		password, err := dao.getPwd(info.Account, req.Password)
 		if err != nil {
 			log.Logger.Error(err)
 			return errors.NewInternalError(err)
@@ -101,8 +102,7 @@ func (dao Admin) Update(req *pb.AdminUpdateReq) errors.Error {
 		req.Password = password
 	}
 	snake := helper.Struct2MapSnakeNoZero(req)
-	delete(snake, "id")
-	delete(snake, "domain_id")
+
 	err := DB(dao.Ctx).Where("id=?", req.ID).Model(model.RbacAdmin{}).Updates(snake).Error
 	if err != nil {
 		log.Logger.Error(err)
@@ -182,8 +182,8 @@ func (dao Admin) Registry(req *pb.RegistryReq) (Err errors.Error) {
 	}
 	role := model.RbacRole{
 		DomainID: domain.ID,
-		Name:     "root",
-		Desc:     "root",
+		Name:     "超级管理员",
+		Desc:     "超级管理员",
 		Status:   1,
 	}
 	daoRole := NewRole(dao.Ctx)
@@ -192,31 +192,23 @@ func (dao Admin) Registry(req *pb.RegistryReq) (Err errors.Error) {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
+	daoRole.rolePermissionSet(tx, role.ID, domain.ID, 3)
 	err = dao.setRole(tx, domain.ID, admin.ID, role.ID)
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
-	permissionList := NewPermission(dao.Ctx).list(tx.Where("domain_id=-1 and status=1"), 0, 0)
-	var permissinIds []uint
-	for _, permission := range permissionList {
-		permissinIds = append(permissinIds, permission.ID)
-	}
-	err = daoRole.rolePermissionSet(tx, role.ID, domain.ID, permissinIds...)
-	if err != nil {
-		log.Logger.Error(err)
-		return errors.NewDBInternal(err)
-	}
+
 	return nil
 }
 
 func (dao Admin) Del(req *pb.DefaultPkReq) errors.Error {
-	err := DB(dao.Ctx).Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).Delete(&model.RbacAdmin{}).Error
+	err := DB(dao.Ctx).Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, dao.GetSession().DomainID).Delete(&model.RbacAdmin{}).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
-	err = DB(dao.Ctx).Where("uid = ? and domain_id=? ", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).Delete(&model.RbacRoleUser{}).Error
+	err = DB(dao.Ctx).Where("uid = ? and domain_id=? ", req.Pk.(*pb.DefaultPkReq_ID).ID, dao.GetSession().DomainID).Delete(&model.RbacRoleUser{}).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
@@ -272,7 +264,7 @@ func (dao Admin) RoleList(req *pb.AdminRoleListReq) []model.RbacRole {
 
 func (dao Admin) SetRole(req *pb.AdminRoleSetReq) errors.Error {
 
-	return dao.setRole(DB(dao.Ctx), uint(req.DomainID), uint(req.UID), helper.TransSliceType[int64, uint](req.RoleIDs)...)
+	return dao.setRole(DB(dao.Ctx), uint(dao.GetSession().DomainID), uint(req.UID), helper.TransSliceType[int64, uint](req.RoleIDs)...)
 }
 
 func (dao Admin) setRole(tx *gorm.DB, domainId, uid uint, roleIds ...uint) errors.Error {

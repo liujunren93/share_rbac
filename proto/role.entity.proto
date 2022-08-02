@@ -9,14 +9,12 @@ message RoleListReq {
   int64  PageSize = 2 ;
   // @gotags: form:"page"
   int64  Page = 3;
-  // @gotags: form:"domain_id" 
-  int64 DomainID=4;
     // @gotags: form:"sort_id"
-    int64 SortID=5;
+    int64 SortID=4;
     // @gotags: form:"sort_field"
-    string SortField=6;
+    string SortField=5;
   // @gotags: form:"sort_order" binding:"oneof='' asc desc,required_with=SortField"
-  string SortOrder=7;
+  string SortOrder=6;
   
 }
 message RoleCreateReq{
@@ -24,10 +22,8 @@ message RoleCreateReq{
   string Name = 1 ;
   // @gotags: json:"desc" binding:"required"
   string  Desc = 2;
-  // @gotags: json:"domain_id"
-  int64 DomainID=3;
   // @gotags: json:"is_lock"
-  bool IsLock=15;
+  bool IsLock=3;
 }
 
 message RoleUpdateReq{
@@ -37,32 +33,26 @@ message RoleUpdateReq{
   string Name = 2 ;
   // @gotags: json:"desc" binding:"required"
   string  Desc = 3;
-  // @gotags: json:"domain_id"  
-  int64 DomainID=4;
   // @gotags: json:"is_lock" gorm:"-"
-  bool IsLock=15;
+  bool IsLock=4;
 }
 
 message RoleDelReq{
   // @gotags: json:"id" binding:"required"
   int64 ID = 1;
-  // @gotags: json:"domain_id" 
-  int64 DomainID=2;
 }
 
 
 message RolePermissionListReq {
   // @gotags: form:"role_id"
   int64 RoleID = 1;
-  // @gotags: form:"domain_id"
-  int64 DomainID=2;
+
 }
 
 message RolePermissionReq {
   // @gotags: form:"role_id"
   repeated  int64 RoleIDs = 1;
-  // @gotags: form:"domain_id"
-  int64 DomainID=2;
+
 }
 
 message RolePermissionSetReq{
@@ -70,6 +60,4 @@ message RolePermissionSetReq{
   int64 RoleID = 1;
   // @gotags: json:"permission_ids" binding:"required"
   repeated int64 PermissionIDS = 2;
-  // @gotags: json:"-" 
-  int64 DomainID=3;
 }

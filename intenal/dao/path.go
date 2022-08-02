@@ -40,7 +40,7 @@ func (dao Path) List(req *pb.PathListReq) entity.PathListRes {
 	if req.Path != "" {
 		db = db.Where("path like ?", "%"+req.Path+"%")
 	}
-	db = db.Where("domain_id = ? or domain_id=-1", req.DomainID)
+	db = db.Where("domain_id = ? or domain_id=-1", dao.GetSession().DomainID)
 
 	if req.PageSize > 0 {
 		res.Total = dao.count(db)
@@ -97,11 +97,15 @@ func (dao Path) Create(req *pb.PathCreateReq) (uint, errors.Error) {
 		ParentID:  uint(req.ParentID),
 		Path:      req.Path,
 		PathType:  int8(req.PathType),
-		DomainID:  int(req.DomainID),
 		ApiPath:   req.ApiPath,
 		Method:    req.Method,
 		Action:    req.Action,
+		DomainID:  int(dao.GetSession().DomainID),
 	}
+	if req.IsPublic {
+		path.DomainID = -1
+	}
+
 	if req.IsLock {
 		path.PL = dao.NewPL()
 	}
@@ -118,7 +122,6 @@ func (dao Path) Create(req *pb.PathCreateReq) (uint, errors.Error) {
 		return 0, errors.NewDBInternal(err)
 	}
 	return path.ID, nil
-
 }
 
 func (dao Path) Info(req *pb.DefaultPkReq) model.RbacPath {
@@ -144,23 +147,27 @@ func (dao Path) Update(req *pb.PathUpdateReq) errors.Error {
 	} else {
 		delete(snake, "meta")
 	}
+	if req.IsPublic {
+		snake["domain_id"] = -1
+	} else {
+		snake["domain_id"] = dao.GetSession().DomainID
+	}
 
 	err := DB(dao.Ctx).Where("id=? ", req.ID).Model(&model.RbacPath{}).Updates(snake).Error
 	if err != nil {
-
 		log.Logger.Error(err)
-
 		return errors.NewDBInternal(err)
 	}
 	return nil
 }
 func (dao Path) Del(req *pb.DefaultPkReq) errors.Error {
-	err := DB(dao.Ctx).Where("id=?", req.Pk.(*pb.DefaultPkReq_ID).ID).Delete(&model.RbacPath{}).Error
+	tx := DB(dao.Ctx).Begin()
+	err := tx.Where("id=?", req.Pk.(*pb.DefaultPkReq_ID).ID).Delete(&model.RbacPath{}).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)
 	}
-	return NewPermission(dao.Ctx).pathDel(uint(req.Pk.(*pb.DefaultPkReq_ID).ID))
+	return NewPermission(dao.Ctx).pathDel(tx, uint(req.Pk.(*pb.DefaultPkReq_ID).ID))
 }
 
 func (dao Path) DelByids(ids []uint) errors.Error {

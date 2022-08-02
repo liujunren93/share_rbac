@@ -6,68 +6,69 @@ option go_package = "../rbac_pb;rbac_pb";
 
 
 message PathCreateReq {
-   // @gotags: json:"-" binding:"required"
-   int64 DomainID = 1;
   // @gotags: json:"component" binding:"required_if=PathType 1"
-  string Component = 2;
+  string Component = 1;
   // @gotags: json:"redirect" 
-  string Redirect = 3;
+  string Redirect = 2;
   // @gotags: json:"parent_id" 
-  int64 ParentID = 4;
+  int64 ParentID = 3;
   // @gotags: json:"path" 
-  string Path = 5;
+  string Path = 4;
   // @gotags: json:"name" binding:"required"
-  string Name = 6;
+  string Name = 5;
   // @gotags: json:"path_type" binding:"required"
-  int64  PathType = 8;
+  int64  PathType = 6;
   // @gotags: json:"meta"
-  map<string, string> Meta = 9;
+  map<string, string> Meta = 7;
   // @gotags: json:"api_path" binding:"required"
-  string ApiPath=10;
+  string ApiPath=8;
   // @gotags: json:"method" 
-  string Method=11;
+  string Method=9;
   // @gotags: json:"action" 
-  string Action=12;
+  string Action=10;
   // @gotags: json:"key" 
-  string Key=13;
+  string Key=11;
   // @gotags: json:"sort"
-  int64 Sort=14;
+  int64 Sort=12;
   // @gotags: json:"is_lock"
-  bool IsLock=15;
+  bool IsLock=13;
+   // @gotags: json:"is_public" gorm:"-"
+  bool IsPublic=14;
 
 }
 
 message PathUpdateReq {
-  // @gotags: json:"-" binding:"required"
-  int64 DomainID = 1;
+ 
   // @gotags: json:"component" binding:"required_if=PathType 1"
-  string Component = 2;
+  string Component = 1;
   // @gotags: json:"redirect"  
-  string Redirect = 3;
+  string Redirect = 2;
   // @gotags: json:"parent_id" 
-  int64 ParentID = 4;
+  int64 ParentID = 3;
   // @gotags: json:"path" 
-  string Path = 5;
+  string Path = 4;
   // @gotags: json:"id" binding:"required"  gorm:"-"
-  int64 ID = 6;
+  int64 ID = 5;
   // @gotags: json:"name" binding:"required"
-  string Name = 7;
+  string Name = 6;
   // @gotags: json:"path_type" binding:"required"
-  int64  PathType = 8;
+  int64  PathType = 7;
   // @gotags: json:"meta"
-  map<string, string> Meta = 9;
+  map<string, string> Meta = 8;
     // @gotags: json:"api_path" binding:"required"
-  string ApiPath=10;
+  string ApiPath=9;
   // @gotags: json:"method" 
-  string Method=11;
+  string Method=10;
     // @gotags: json:"action" 
-  string Action=12;
+  string Action=11;
   // @gotags: json:"key" 
-  string Key=13;
+  string Key=12;
   // @gotags: json:"sort"
-  int64 Sort=14;
+  int64 Sort=13;
   // @gotags: json:"is_lock" gorm:"-"
-  bool IsLock=15;
+  bool IsLock=14;
+  // @gotags: json:"is_public" gorm:"-"
+  bool IsPublic=15;
 
 }
 
@@ -83,12 +84,10 @@ message PathListReq {
   string Path = 4;
   // @gotags: form:"path_type"
   int64 PathType = 5;
- // @gotags: form:"-"
-  int64 DomainID=6;
   // @gotags: form:"sort_field"
- string SortField=7;
+ string SortField=6;
   // @gotags: form:"sort_order" binding:"oneof='' asc desc,required_with=SortField"
-  string SortOrder=8;
+  string SortOrder=7;
 }
 
 

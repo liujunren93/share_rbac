@@ -19,7 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RbacClient interface {
 	MDomainList(ctx context.Context, in *DomainListReq, opts ...grpc.CallOption) (*DefaultRes, error)
-	MDomainCreate(ctx context.Context, in *DomainCreateReq, opts ...grpc.CallOption) (*DefaultRes, error)
+	// rpc MDomainCreate(DomainCreateReq)returns(DefaultRes);
 	MDomainUpdate(ctx context.Context, in *DomainUpdateReq, opts ...grpc.CallOption) (*DefaultRes, error)
 	MDomainDel(ctx context.Context, in *DefaultPkReq, opts ...grpc.CallOption) (*DefaultRes, error)
 	MDomainInfo(ctx context.Context, in *DefaultPkReq, opts ...grpc.CallOption) (*DefaultRes, error)
@@ -71,15 +71,6 @@ func NewRbacClient(cc grpc.ClientConnInterface) RbacClient {
 func (c *rbacClient) MDomainList(ctx context.Context, in *DomainListReq, opts ...grpc.CallOption) (*DefaultRes, error) {
 	out := new(DefaultRes)
 	err := c.cc.Invoke(ctx, "/rbacProto.Rbac/MDomainList", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *rbacClient) MDomainCreate(ctx context.Context, in *DomainCreateReq, opts ...grpc.CallOption) (*DefaultRes, error) {
-	out := new(DefaultRes)
-	err := c.cc.Invoke(ctx, "/rbacProto.Rbac/MDomainCreate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -433,7 +424,7 @@ func (c *rbacClient) GetDomainPolicy(ctx context.Context, in *GetDomainPolicyReq
 // for forward compatibility
 type RbacServer interface {
 	MDomainList(context.Context, *DomainListReq) (*DefaultRes, error)
-	MDomainCreate(context.Context, *DomainCreateReq) (*DefaultRes, error)
+	// rpc MDomainCreate(DomainCreateReq)returns(DefaultRes);
 	MDomainUpdate(context.Context, *DomainUpdateReq) (*DefaultRes, error)
 	MDomainDel(context.Context, *DefaultPkReq) (*DefaultRes, error)
 	MDomainInfo(context.Context, *DefaultPkReq) (*DefaultRes, error)
@@ -480,9 +471,6 @@ type UnimplementedRbacServer struct {
 
 func (UnimplementedRbacServer) MDomainList(context.Context, *DomainListReq) (*DefaultRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MDomainList not implemented")
-}
-func (UnimplementedRbacServer) MDomainCreate(context.Context, *DomainCreateReq) (*DefaultRes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method MDomainCreate not implemented")
 }
 func (UnimplementedRbacServer) MDomainUpdate(context.Context, *DomainUpdateReq) (*DefaultRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MDomainUpdate not implemented")
@@ -624,24 +612,6 @@ func _Rbac_MDomainList_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RbacServer).MDomainList(ctx, req.(*DomainListReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Rbac_MDomainCreate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DomainCreateReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RbacServer).MDomainCreate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/rbacProto.Rbac/MDomainCreate",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RbacServer).MDomainCreate(ctx, req.(*DomainCreateReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1340,10 +1310,6 @@ var Rbac_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "MDomainList",
 			Handler:    _Rbac_MDomainList_Handler,
-		},
-		{
-			MethodName: "MDomainCreate",
-			Handler:    _Rbac_MDomainCreate_Handler,
 		},
 		{
 			MethodName: "MDomainUpdate",

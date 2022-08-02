@@ -70,7 +70,8 @@ func (r *Rbac) AccountEdit(ctx context.Context, req *pb.AccountEditReq) (*pb.Def
 }
 
 func (r *Rbac) GetDomainPolicy(ctx context.Context, req *pb.GetDomainPolicyReq) (*pb.DefaultRes, error) {
-	userList := dao.NewRole(ctx).GetDomainPolicy(req.DomainID)
+	da := dao.NewRole(ctx)
+	userList := da.GetDomainPolicy()
 	var res pb.DefaultRes
 	return &res, netHelper.RpcResponseString(&res, nil, userList)
 }

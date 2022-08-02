@@ -56,19 +56,19 @@ func (dao Domain) info(id int64) model.RbacDomain {
 	return info
 }
 
-func (dao Domain) Create(req *pb.DomainCreateReq) errors.Error {
-	domain := model.RbacDomain{
-		Name:   req.Name,
-		Domain: req.Domain,
-		Status: int8(req.Status),
-	}
-	err := dao.create(DB(dao.Ctx), &domain)
-	if err != nil {
-		log.Logger.Error(err)
-		return errors.NewDBInternal(err)
-	}
-	return nil
-}
+// func (dao Domain) Create(req *pb.DomainCreateReq) errors.Error {
+// 	domain := model.RbacDomain{
+// 		Name:   req.Name,
+// 		Domain: req.Domain,
+// 		Status: int8(req.Status),
+// 	}
+// 	err := dao.create(DB(dao.Ctx), &domain)
+// 	if err != nil {
+// 		log.Logger.Error(err)
+// 		return errors.NewDBInternal(err)
+// 	}
+// 	return nil
+// }
 func (dao Domain) create(tx *gorm.DB, domain *model.RbacDomain) error {
 	err := tx.Create(domain).Error
 	if err != nil {

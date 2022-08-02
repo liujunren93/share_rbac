@@ -2,14 +2,14 @@ syntax = "proto3";
 
 package rbacProto;
 option go_package = "../rbac_pb;rbac_pb";
-message DomainCreateReq {
-  // @gotags: json:"name" binding:"required"
-  string Name = 1;
-  // @gotags: json:"domain" binding:"required"
-  string Domain = 2;
-  // @gotags: json:"status" binding:"required"
-  int32 Status = 3;
-}
+// message DomainCreateReq {
+//   // @gotags: json:"name" binding:"required"
+//   string Name = 1;
+//   // @gotags: json:"domain" binding:"required"
+//   string Domain = 2;
+//   // @gotags: json:"status" binding:"required"
+//   int32 Status = 3;
+// }
 
 message DomainListReq {
   // @gotags: form:"name"

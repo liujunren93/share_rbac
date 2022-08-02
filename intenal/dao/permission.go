@@ -30,7 +30,7 @@ func NewPermission(ctx context.Context) Permission {
 
 func (dao Permission) List(req *pb.PermissionListReq) entity.PermissionListRes {
 	var res entity.PermissionListRes
-	db := DB(dao.Ctx).Where("domain_id=-1 or domain_id=?", req.DomainID)
+	db := DB(dao.Ctx).Where("domain_id=-1 or domain_id=?", dao.GetSession().DomainID)
 	if req.Name != "" {
 		db = db.Where("name like ?", "%"+req.Name+"%")
 	}
@@ -80,21 +80,27 @@ func (dao Permission) permissionMap(db *gorm.DB, limit, page int64, ids ...uint)
 
 func (dao Permission) Info(req *pb.DefaultPkReq) model.RbacPermission {
 	var info model.RbacPermission
-	DB(dao.Ctx).Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).First(&info)
+	DB(dao.Ctx).Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, dao.GetSession().DomainID).First(&info)
 	return info
 }
 
 func (dao Permission) Create(req *pb.PermissionCreateReq) (uint, errors.Error) {
 	var info model.RbacPermission
-	first := DB(dao.Ctx).Where("name=?", req.Name).First(&info)
+	session := dao.GetSession()
+	domainId := session.DomainID
+	if req.IsPublic && session.DomainID == 1 { // 只有平台才能设置公共权限
+		domainId = -1
+	}
+	first := DB(dao.Ctx).Where("domain_id=? and name=?", domainId, req.Name).First(&info)
 	if first.RowsAffected != 0 {
-		return 0, errors.NewDBDuplication("name")
+		return 0, errors.NewDBDuplication("权限名重复")
 	}
 	permission := model.RbacPermission{
-		DomainID: int(req.DomainID),
 		Name:     req.Name,
 		Desc:     req.Desc,
+		DomainID: int(domainId),
 	}
+
 	err := DB(dao.Ctx).Create(&permission).Error
 	if err != nil {
 		log.Logger.Error(err)
@@ -103,31 +109,48 @@ func (dao Permission) Create(req *pb.PermissionCreateReq) (uint, errors.Error) {
 	return permission.ID, nil
 }
 
-func (dao Permission) Update(req *pb.PermissionUpdateReq) errors.Error {
+func (dao Permission) Update(req *pb.PermissionUpdateReq) (int, errors.Error) {
 	var info model.RbacPermission
-	first := DB(dao.Ctx).Where("domain_id=? and name=? and id!=?", req.DomainID, req.Name, req.ID).First(&info)
+	session := dao.GetSession()
+	domainId := session.DomainID
+	if req.IsPublic && session.DomainID == 1 { // 只有平台才能设置公共权限
+		domainId = -1
+	}
+	first := DB(dao.Ctx).Where("domain_id=? and name=? and id!=?", domainId, req.Name, req.ID).First(&info)
 	if first.RowsAffected != 0 {
-		return errors.NewDBNoData("")
+		return 0, errors.NewDBNoData("")
 	}
 	snake := helper.Struct2MapSnakeNoZero(req)
 	if req.IsLock {
 		snake["pl"] = dao.NewPL()
 	}
-	err := DB(dao.Ctx).Model(&model.RbacPermission{}).Where("id=? and domain_id=?", req.ID, req.DomainID).Updates(snake).Error
+
+	snake["domain_id"] = domainId
+
+	err := DB(dao.Ctx).Model(&model.RbacPermission{}).Where("id=? and domain_id=?", req.ID, domainId).Updates(snake).Error
 	if err != nil {
-		log.Logger.Error(err)
-		return errors.NewDBInternal(err)
+		log.Logger.Error("Permission.Update.Updates", err)
+		return 0, errors.NewDBInternal(err)
 	}
-	return nil
+	return int(domainId), nil
 }
 
-func (dao Permission) Del(req *pb.DefaultPkReq) errors.Error {
-	err := DB(dao.Ctx).Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, req.DomainID).Delete(&model.RbacPermission{}).Error
-	if err != nil {
-		log.Logger.Error(err)
-		return errors.NewDBInternal(err)
+func (dao Permission) Del(req *pb.DefaultPkReq) (domainId int, err errors.Error) {
+	var er error
+	if dao.GetSession().PL == 1 {
+		domainId = -1
+		var info model.RbacPermission
+		er = DB(dao.Ctx).Where("id=?", req.Pk.(*pb.DefaultPkReq_ID)).Delete(&info).Error
+		domainId = info.DomainID
+	} else {
+		er = DB(dao.Ctx).Where("id=? and domain_id=?", req.Pk.(*pb.DefaultPkReq_ID).ID, dao.GetSession().DomainID).Delete(&model.RbacPermission{}).Error
+		domainId = int(dao.GetSession().DomainID)
 	}
-	return nil
+	if er != nil {
+		log.Logger.Error("Permission.Del", err, req)
+		return 0, errors.NewDBInternal(err)
+	}
+	return domainId, nil
 }
 
 func (dao Permission) PathList(req *pb.PermissionPathListReq) []model.RbacPath {
@@ -143,8 +166,8 @@ func (dao Permission) PathList(req *pb.PermissionPathListReq) []model.RbacPath {
 	}
 	return NewPath(dao.Ctx).list(DB(dao.Ctx), []string{"id,title,name,path"}, uintSet.List()...)
 }
-func (dao Permission) pathDel(id uint) errors.Error {
-	err := DB(dao.Ctx).Where("path_id=?", id).Delete(&model.RbacPermissionPath{}).Error
+func (dao Permission) pathDel(tx *gorm.DB, id uint) errors.Error {
+	err := tx.Where("path_id=?", id).Delete(&model.RbacPermissionPath{}).Error
 	if err != nil {
 		log.Logger.Error(err)
 		return errors.NewDBInternal(err)

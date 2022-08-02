@@ -10,7 +10,7 @@ import "permission.entity.proto";
 import "domain.entity.proto";
 service Rbac {
   rpc MDomainList(DomainListReq)returns(DefaultRes);
-  rpc MDomainCreate(DomainCreateReq)returns(DefaultRes);
+  // rpc MDomainCreate(DomainCreateReq)returns(DefaultRes);
   rpc MDomainUpdate(DomainUpdateReq)returns(DefaultRes);
   rpc MDomainDel(DefaultPkReq)returns(DefaultRes);
   rpc MDomainInfo(DefaultPkReq)returns(DefaultRes);

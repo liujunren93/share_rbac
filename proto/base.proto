@@ -31,9 +31,6 @@ message DefaultPkReq{
     // @gotags: json:"code"
     string Code = 2;
   } 
-    // @gotags: json:"domain_id" binding:"required"
-   int64 DomainID=3;
-
 }
 
 // 主键请求
