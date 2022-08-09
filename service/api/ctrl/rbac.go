@@ -24,7 +24,7 @@ const (
 var localStorage *lru.LRU[[][]string]
 var casBinMode model.Model
 
-const modeStr = `
+var modeStr = `
 [request_definition]
 r = sub, dom, obj, act
 
@@ -38,10 +38,13 @@ g = _, _, _
 e = some(where (p.eft == allow))
 
 [matchers]
-m = g(r.sub, p.sub, r.dom) && r.dom == p.dom &&  keyMatch2(r.obj, p.obj)  && regexMatch(r.act, p.act)
-`
+m = g(r.sub, p.sub, r.dom) && r.dom == p.dom &&  keyMatch2(r.obj, p.obj)  && regexMatch(r.act, p.act)`
 
-func init() {
+func InitCasbin(mode string) {
+	if mode == "debug" {
+		modeStr += `|| 1==1`
+	}
+
 	casBinMode, _ = model.NewModelFromString(modeStr)
 	localStorage, _ = lru.NewLRU[[][]string](0, 86400)
 }
@@ -84,7 +87,7 @@ func (ctrl *rbacCtrl) domainPolicy(ctx context.Context, domainId int64) error {
 			log.Logger.Error("domainPolicy.Unmarshal", err)
 			return err
 		}
-		fmt.Println(data)
+
 		prolicy = make([][]string, 0, len(data))
 		for _, v := range data {
 			// //p, admin, domain1, data1, read
@@ -103,12 +106,13 @@ func (ctrl *rbacCtrl) domainPolicy(ctx context.Context, domainId int64) error {
 }
 
 func (ctrl *rbacCtrl) userPolicy(uid, domainId int64, roleIds []int64) error {
-
+	fmt.Println(uid)
 	key := fmt.Sprintf("g_%d_%d", domainId, uid)
 	fmt.Println(key)
 	if _, ok := ctrl.prolicyMap.Load(key); !ok {
 		var prolicy = make([][]string, 0, len(roleIds))
 		for _, v := range roleIds {
+			// uid ,role,domain,
 			prolicy = append(prolicy, []string{strconv.Itoa(int(uid)), strconv.Itoa(int(v)), strconv.Itoa(int(domainId))})
 		}
 		_, err := ctrl.syncedEnforcer.AddGroupingPolicies(prolicy)
@@ -144,9 +148,10 @@ func (ctrl *rbacCtrl) CheckPermission(ctx context.Context, reqPath, method strin
 	if ok {
 		return nil
 	}
-	return errors.New("Forbidden")
+	return errors.New("Forbidden·11")
 }
 
+// 监听权限变化
 func (ctrl *rbacCtrl) monitorRabc(ctx context.Context) {
 	fmt.Println("monitorRabc")
 	ch := ctrl.mq.Subscribe(ctx, REDISKEY_MQ_DOMAIN_PERSMISSION)

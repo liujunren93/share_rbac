@@ -25,12 +25,13 @@ import (
 
 type Rbac struct {
 	mq         mq.Mqer
+	mode       string //debug
 	auther     auth.Auther
 	grpcClient client.Client
 }
 
-func NewRbac(mq mq.Mqer) *Rbac {
-	return &Rbac{mq: mq}
+func NewRbac(mq mq.Mqer, mode string) *Rbac {
+	return &Rbac{mq: mq, mode: mode}
 }
 
 func (r *Rbac) SetLogger(logger *logrus.Logger) {
@@ -79,6 +80,7 @@ func (r *Rbac) NewApiService(ctx context.Context, engine *gin.Engine, auther aut
 		log.Logger.Error(err)
 		return
 	}
+	ctrl.InitCasbin(r.mode)
 	ctrl.InitRbacCtrl(ctx, r.auther, r.mq, cci)
 	middleware.UpdateAuther(r.auther)
 	return r.initRbacRoute(engine)
