@@ -68,7 +68,6 @@ func (ctrl *rbacCtrl) initCasPolicy() error {
 
 func (ctrl *rbacCtrl) domainPolicy(ctx context.Context, domainId int64) error {
 	key := fmt.Sprintf("p_%d", domainId)
-
 	if _, ok := ctrl.prolicyMap.Load(key); !ok {
 		fmt.Println("reload domainPolicy")
 		var prolicy [][]string
@@ -106,9 +105,7 @@ func (ctrl *rbacCtrl) domainPolicy(ctx context.Context, domainId int64) error {
 }
 
 func (ctrl *rbacCtrl) userPolicy(uid, domainId int64, roleIds []int64) error {
-	fmt.Println(uid)
 	key := fmt.Sprintf("g_%d_%d", domainId, uid)
-	fmt.Println(key)
 	if _, ok := ctrl.prolicyMap.Load(key); !ok {
 		var prolicy = make([][]string, 0, len(roleIds))
 		for _, v := range roleIds {
@@ -148,7 +145,7 @@ func (ctrl *rbacCtrl) CheckPermission(ctx context.Context, reqPath, method strin
 	if ok {
 		return nil
 	}
-	return errors.New("Forbidden·11")
+	return errors.New("Forbidden")
 }
 
 // 监听权限变化

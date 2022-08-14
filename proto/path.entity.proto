@@ -34,6 +34,8 @@ message PathCreateReq {
   bool IsLock=13;
    // @gotags: json:"is_public" gorm:"-"
   bool IsPublic=14;
+  // @gotags: json:"status"
+  int32 Status=15; 
 
 }
 
@@ -69,6 +71,8 @@ message PathUpdateReq {
   bool IsLock=14;
   // @gotags: json:"is_public" gorm:"-"
   bool IsPublic=15;
+  // @gotags: json:"status"
+  int32 Status=16; 
 
 }
 

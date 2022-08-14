@@ -100,6 +100,7 @@ func (dao Path) Create(req *pb.PathCreateReq) (uint, errors.Error) {
 		ApiPath:   req.ApiPath,
 		Method:    req.Method,
 		Action:    req.Action,
+		Status:    uint(req.Status),
 		DomainID:  int(dao.GetSession().DomainID),
 	}
 	if req.IsPublic {
@@ -137,7 +138,7 @@ func (dao Path) Update(req *pb.PathUpdateReq) errors.Error {
 		return errors.NewDBDuplication("account")
 	}
 
-	snake := helper.Struct2MapSnake(req)
+	snake := helper.Struct2MapSnakeNoZero(req)
 	if req.IsLock {
 		snake["pl"] = dao.NewPL()
 	}
@@ -257,7 +258,7 @@ func (dao Path) getPathByPIDs(pathType int8, permissionIDs ...uint) []model.Rbac
 	for _, v := range list {
 		uintSet.Add(v.PathID)
 	}
-	db := DB(dao.Ctx).Where("path_type=?", pathType).Order("sort asc").Debug()
+	db := DB(dao.Ctx).Where("path_type=? and status=1", pathType).Order("sort asc")
 
 	return dao.list(db, nil, uintSet.List()...)
 
