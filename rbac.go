@@ -24,10 +24,10 @@ import (
 )
 
 type Rbac struct {
-	mq         mq.Mqer
-	mode       string //debug
-	auther     auth.Auther
-	grpcClient client.Client
+	mq     mq.Mqer
+	mode   string //debug
+	auther auth.Auther
+	// grpcClient client.Client
 }
 
 func NewRbac(mq mq.Mqer, mode string) *Rbac {

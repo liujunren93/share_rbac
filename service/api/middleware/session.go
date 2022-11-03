@@ -1,10 +1,9 @@
 package middleware
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/liujunren93/share_rbac/log"
 	"github.com/liujunren93/share_rbac/service/api/ctrl"
-
-	"github.com/gin-gonic/gin"
 	"github.com/liujunren93/share_utils/common/auth"
 	"github.com/liujunren93/share_utils/helper"
 )
@@ -37,7 +36,8 @@ func Session(ctx *gin.Context) {
 					log.Logger.Error(err)
 					return
 				}
-				ctx.Set(ctrl.ROLES, helper.TransSliceType[float64, int64](da))
+				roleIds := helper.TransSliceType[float64, int64](da)
+				ctx.Set(ctrl.ROLES, roleIds)
 			}
 
 		}
