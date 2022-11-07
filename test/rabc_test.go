@@ -11,7 +11,7 @@ import (
 
 	_ "net/http/pprof"
 
-	g "github.com/liujunren93/share_utils/databases/gorm"
+	g "github.com/liujunren93/share_utils/db/gorm"
 )
 
 /**
