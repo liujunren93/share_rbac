@@ -63,7 +63,7 @@ func UpdateAuther(auther auth.Auther) {
 func (ctrl *rbacCtrl) DomainList(ctx *gin.Context) {
 	var req pb.DomainListReq
 	if err := ctx.ShouldBindQuery(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	res, err := ctrl.grpcClient.MDomainList(ctx, &req)
@@ -91,21 +91,21 @@ func (ctrl *rbacCtrl) DomainDel(ctx *gin.Context) {
 
 }
 
-// func (ctrl *rbacCtrl) DomainCreate(ctx *gin.Context) {
-// 	var req pb.DomainCreateReq
-// 	if err := ctx.ShouldBindJSON(&req); err != nil {
-// 		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
-// 		return
-// 	}
-// 	create, err := ctrl.grpcClient.MDomainCreate(ctx, &req)
-// 	netHelper.Response(ctx, create, err, nil)
-// }
+//	func (ctrl *rbacCtrl) DomainCreate(ctx *gin.Context) {
+//		var req pb.DomainCreateReq
+//		if err := ctx.ShouldBindJSON(&req); err != nil {
+//			netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
+//			return
+//		}
+//		create, err := ctrl.grpcClient.MDomainCreate(ctx, &req)
+//		netHelper.Response(ctx, create, err, nil)
+//	}
 func (ctrl *rbacCtrl) DomainUpdate(ctx *gin.Context) {
 	var req pb.DomainUpdateReq
 	atoi, _ := strconv.Atoi(ctx.Param("id"))
 	req.ID = int64(atoi)
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	dr, err := ctrl.grpcClient.MDomainUpdate(ctx, &req)
@@ -117,7 +117,7 @@ func (ctrl *rbacCtrl) AdminList(ctx *gin.Context) {
 	var req pb.AdminListReq
 	req.DomainID = ctx.GetInt64(DOMIAN_ID)
 	if err := ctx.ShouldBindQuery(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 
@@ -130,7 +130,7 @@ func (ctrl *rbacCtrl) AdminCreate(ctx *gin.Context) {
 	var req pb.AdminCreateReq
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	req.DomainID = ctx.GetInt64(DOMIAN_ID)
@@ -144,7 +144,7 @@ func (ctrl *rbacCtrl) AdminUpdate(ctx *gin.Context) {
 	req.ID = int64(atoi)
 	req.DomainID = ctx.GetInt64(DOMIAN_ID)
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 
@@ -184,7 +184,7 @@ func (ctrl *rbacCtrl) AdminRoleSet(ctx *gin.Context) {
 	atoi, _ := strconv.Atoi(ctx.Param("id"))
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	req.UID = int64(atoi)
@@ -196,7 +196,7 @@ func (ctrl *rbacCtrl) PermissionList(ctx *gin.Context) {
 	var req pb.PermissionListReq
 	// req.DomainID = ctx.GetInt64(DOMIAN_ID)
 	if err := ctx.ShouldBindQuery(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	list, err := ctrl.grpcClient.MPermissionList(ctx, &req)
@@ -216,7 +216,7 @@ func (ctrl *rbacCtrl) PermissionCreate(ctx *gin.Context) {
 	var req pb.PermissionCreateReq
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	list, err := ctrl.grpcClient.MPermissionCreate(ctx, &req)
@@ -229,7 +229,7 @@ func (ctrl *rbacCtrl) PermissionUpdate(ctx *gin.Context) {
 	req.ID = int64(atoi)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	list, err := ctrl.grpcClient.MPermissionUpdate(ctx, &req)
@@ -248,7 +248,7 @@ func (ctrl *rbacCtrl) PermissionPathList(ctx *gin.Context) {
 	var req pb.PermissionPathListReq
 
 	if err := ctx.ShouldBindQuery(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	id, _ := strconv.Atoi(ctx.Param("id"))
@@ -260,7 +260,7 @@ func (ctrl *rbacCtrl) PermissionPathList(ctx *gin.Context) {
 func (ctrl *rbacCtrl) PermissionPathSet(ctx *gin.Context) {
 	var req pb.PermissionPathSetReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	id, _ := strconv.Atoi(ctx.Param("id"))
@@ -272,7 +272,7 @@ func (ctrl *rbacCtrl) PermissionPathSet(ctx *gin.Context) {
 func (ctrl *rbacCtrl) RoleList(ctx *gin.Context) {
 	var req pb.RoleListReq
 	if err := ctx.ShouldBindQuery(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	res, err := ctrl.grpcClient.MRoleList(ctx, &req)
@@ -282,7 +282,7 @@ func (ctrl *rbacCtrl) RoleList(ctx *gin.Context) {
 func (ctrl *rbacCtrl) RoleCreate(ctx *gin.Context) {
 	var req pb.RoleCreateReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	res, err := ctrl.grpcClient.MRoleCreate(ctx, &req)
@@ -294,7 +294,7 @@ func (ctrl *rbacCtrl) RoleUpdate(ctx *gin.Context) {
 	atoi, _ := strconv.Atoi(ctx.Param("id"))
 	req.ID = int64(atoi)
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	list, err := ctrl.grpcClient.MRoleUpdate(ctx, &req)
@@ -330,7 +330,7 @@ func (ctrl *rbacCtrl) RolePermissionSet(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	req.RoleID = int64(id)
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 
@@ -341,7 +341,7 @@ func (ctrl *rbacCtrl) RolePermissionSet(ctx *gin.Context) {
 func (ctrl *rbacCtrl) PathList(ctx *gin.Context) {
 	var req pb.PathListReq
 	if err := ctx.ShouldBindQuery(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	res, err := ctrl.grpcClient.MPathList(ctx, &req)
@@ -351,7 +351,7 @@ func (ctrl *rbacCtrl) PathList(ctx *gin.Context) {
 func (ctrl *rbacCtrl) PathCreate(ctx *gin.Context) {
 	var req pb.PathCreateReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 
@@ -365,7 +365,7 @@ func (ctrl *rbacCtrl) PathUpdate(ctx *gin.Context) {
 	req.ID = int64(atoi)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	list, err := ctrl.grpcClient.MPathUpdate(ctx, &req)
@@ -408,7 +408,7 @@ func (ctrl *rbacCtrl) UserPermission(ctx *gin.Context) {
 func (ctrl *rbacCtrl) Login(ctx *gin.Context) {
 	var req pb.LoginReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	res, err := ctrl.grpcClient.Login(ctx, &req)
@@ -434,7 +434,7 @@ func (ctrl *rbacCtrl) Login(ctx *gin.Context) {
 func (ctrl *rbacCtrl) Registry(ctx *gin.Context) {
 	var req pb.RegistryReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	res, err := ctrl.grpcClient.Registry(ctx, &req)
@@ -448,7 +448,7 @@ type RefreshTokenReq struct {
 func (ctrl *rbacCtrl) RefreshToken(ctx *gin.Context) {
 	var req RefreshTokenReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	ntoken, err := ctrl.Auther.Token(req.RefreshToken)
@@ -479,7 +479,7 @@ func (ctrl *rbacCtrl) AccountInfo(ctx *gin.Context) {
 func (ctrl *rbacCtrl) AccountEdit(ctx *gin.Context) {
 	var req pb.AccountEditReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		netHelper.Response(ctx, errors.StatusBadRequest, err, nil)
+		netHelper.Response(ctx, errors.NewBadRequest(err), err, nil)
 		return
 	}
 	req.DomainID = ctx.GetInt64(DOMIAN_ID)
