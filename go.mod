@@ -54,7 +54,3 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gorm.io/driver/mysql v1.3.4 // indirect
 )
-
-replace github.com/liujunren93/share_utils => ../share_utils
-
-replace github.com/liujunren93/share => ../share
