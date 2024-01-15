@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"errors"
+
 	model2 "github.com/liujunren93/share_rbac/intenal/model"
 	"github.com/liujunren93/share_rbac/rbac_pb"
 	"github.com/liujunren93/share_utils/common/metadata"
@@ -64,6 +66,9 @@ func offset(size, offset int64) int {
 }
 
 func InitDB(db *gorm.DB) error {
+	if db == nil {
+		return errors.New("gorm db is nil")
+	}
 	Db = db
 	list := []interface{}{
 		&model2.RbacAdmin{},
